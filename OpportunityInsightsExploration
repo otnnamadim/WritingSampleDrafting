@@ -1,0 +1,97 @@
+
+Python to Pull Data / Establish Data Pipeline
+import requests
+import pandas as pd
+
+# 1. Pipeline Configuration
+api_key = "[Paste API Key Here]"
+year = "2018"
+dataset = "acs/acs5"
+geography = "school district (unified):*"
+
+# Define mapping for Census codes to clean, human-readable column names
+variable_mapping = {
+    "NAME": "District Name",
+    "B01001_001E": "Total Population",
+    "B19013_001E": "Median Household Income",
+    "B14001_001E": "Total Enrolled in School",
+    "B17001_001E": "Poverty Status Determined Base",
+    "B02001_002E": "White Alone",
+    "B02001_003E": "Black or African American Alone",
+    "B02001_004E": "American Indian and Alaska Native Alone",
+    "B02001_005E": "Asian Alone",
+    "B03002_012E": "Hispanic or Latino"
+}
+
+# Mapping FIPS codes to clean 2-letter state abbreviations
+fips_to_state = {
+    '01': 'AL', '02': 'AK', '04': 'AZ', '05': 'AR', '06': 'CA', '08': 'CO', '09': 'CT', '10': 'DE',
+    '11': 'DC', '12': 'FL', '13': 'GA', '15': 'HI', '16': 'ID', '17': 'IL', '18': 'IN', '19': 'IA',
+    '20': 'KS', '21': 'KY', '22': 'LA', '23': 'ME', '24': 'MD', '25': 'MA', '26': 'MI', '27': 'MN',
+    '28': 'MS', '29': 'MO', '30': 'MT', '31': 'NE', '32': 'NV', '33': 'NH', '34': 'NJ', '35': 'NM',
+    '36': 'NY', '37': 'NC', '38': 'ND', '40': 'OK', '41': 'OR', '42': 'PA', '44': 'RI', '45': 'SC',
+    '46': 'SD', '47': 'TN', '48': 'TX', '49': 'UT', '50': 'VT', '51': 'VA', '53': 'WA', '54': 'WV',
+    '55': 'WI', '56': 'WY', '72': 'PR'
+}
+
+# Construct the variables parameter string for the URL
+variables_param = ",".join(variable_mapping.keys())
+
+# 2. Extract Phase (Nationwide API Request)
+# FIXED: Re-established the correct 'https://census.gov' base URL structure
+url = f"https://census.gov{year}/{dataset}?get={variables_param}&for={geography}&key={api_key}"
+
+try:
+    response = requests.get(url)
+    response.raise_for_status()  # Check for HTTP request errors
+    raw_data = response.json()
+except requests.exceptions.RequestException as e:
+    print(f"API Request Failed: {e}")
+    raw_data = None
+
+# 3. Transform Phase (Data Wrangling)
+if raw_data:
+    # FIXED: Handled your header assignment update safely
+    headers = raw_data[0]
+    rows = raw_data[1:]
+    
+    df = pd.DataFrame(rows, columns=headers)
+    
+    # Process the automatic lowercase 'state' FIPS column returned by the API
+    if 'state' in df.columns:
+        # Create a clean 'State' column by mapping FIPS codes to postal codes (e.g., '48' -> 'TX')
+        df['State'] = df['state'].map(fips_to_state)
+        # Fallback to the raw FIPS digits if a code isn't in our dictionary
+        df['State'] = df['State'].fillna(df['state'])
+    
+    # Drop structural geographic columns added automatically by the Census API
+    geo_columns_to_drop = [col for col in df.columns if col not in variable_mapping and col != 'State']
+    df = df.drop(columns=geo_columns_to_drop)
+    
+    # Rename columns using our clean labels
+    df = df.rename(columns=variable_mapping)
+    
+    # Convert numeric fields from strings to numeric types (handles missing values with NaN)
+    numeric_cols = [col for col in df.columns if col not in ["District Name", "State"]]
+    for col in numeric_cols:
+        df[col] = pd.to_numeric(df[col], errors='coerce')
+        
+    # Reorder columns to place text identifiers at the very front
+    cols = ['District Name', 'State'] + [c for c in df.columns if c not in ['District Name', 'State']]
+    df = df[cols]
+        
+    # 4. Load/Preview Phase
+    print(f"Successfully extracted {len(df)} school districts across all states.")
+    print(df.head())
+    
+    # Optional: Save nationwide data to CSV
+    df.to_csv(f"acs_{year}_us_school_districts.csv", index=False)
+
+
+
+
+R Script to Read Data
+NCES_CCD_LEA_Survey_96_97 <- read_dta("/Users/ozoemenannamadim/Downloads/replicate_2014-1/clean_public_data/public_raw_data/k-12/CCD_school_96.dta")
+NCES_CCD_LEA_Survey_04 <- read_dta("~/Downloads/replicate_2014-1/clean_public_data/public_raw_data/k-12/dr001b.dta")
+NCES_CCD_LEA_Survey_04 <- read_dta("~/Downloads/replicate_2014-1/clean_public_data/public_raw_data/k-12/dr001b.dta")
+NCES_CCD_LEA_Survey_04 <- read_dta("~/Downloads/replicate_2014-1/clean_public_data/public_raw_data/k-12/dr001b.dta")
