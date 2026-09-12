@@ -1,0 +1,156 @@
+Yes — that is the right general data structure, but I would make one important change to the years.
+
+Your proposed design:
+
+Pre-ESSA: 2010–2014
+Post-ESSA: 2018–2022
+
+is conceptually reasonable, but NAEP isn't administered every year in every subject/grade. So you should not expect observations for every year in that range.
+
+For the writing sample, I'd build the dataset around all available NAEP assessment cycles in your desired window rather than forcing annual observations.
+
+NAEP
+
+Collect:
+
+Dimension	Values
+Geography	State
+Grade	4th, 8th
+Subject	Math, Reading
+Period	Pre/post ESSA
+Subgroup	All students + disadvantaged subgroups
+Outcome	Scale score + achievement levels/proficiency
+Year	Every available assessment cycle
+
+Your primary subgroup dimensions should remain:
+
+Black
+White
+Hispanic
+Economically disadvantaged
+English learners
+Students with disabilities
+All students
+
+And, as we discussed, gender can be secondary, rather than part of your core analysis.
+
+One important timing issue
+
+I would not define 2018 as simply "post-ESSA."
+
+ESSA was signed in December 2015, but implementation occurred over subsequent years. So your empirical design needs to distinguish:
+
+2010–2015: NCLB/pre-ESSA period
+2016–2017: transition period
+2018 onward: ESSA implementation period
+
+That distinction is especially important because you're trying to study implementation, not merely the date Congress enacted the law.
+
+And I would probably include 2015 in the pre-period rather than treating it as post simply because ESSA was signed that year.
+
+Your second dataset
+NCES graduation/dropout
+
+Yes, collect these by:
+
+State × year × subgroup
+
+with the same basic subgroup structure where the data permit it.
+
+For example:
+
+State	Year	Subgroup	Graduation Rate	Dropout Rate
+Texas	2010	All	...	...
+Texas	2010	Black	...	...
+Texas	2010	White	...	...
+Texas	2010	Hispanic	...	...
+Texas	2010	Economically disadvantaged	...	...
+
+But there's an important caveat: don't assume the graduation/dropout datasets have exactly the same subgroup definitions and years as NAEP. We'll need to document the definitions and availability of each measure before merging them.
+
+I would actually create three separate raw datasets
+naep_raw
+state
+year
+grade
+subject
+subgroup
+measure
+estimate
+standard_error
+graduation_raw
+state
+year
+subgroup
+graduation_rate
+dropout_raw
+state
+year
+subgroup
+dropout_rate
+
+Then a fourth dataset:
+
+essa_accountability
+state
+implementation_period
+academic_weight
+growth_weight
+graduation_weight
+ell_weight
+sqss_weight
+sqss_measure
+...
+
+Eventually these can be joined using:
+
+state + year
+One change to your research workflow
+
+I wouldn't pull 2010–2014 and 2018–2022 and immediately label them "pre" and "post."
+
+Instead, first pull the complete available series, including the transition years.
+
+For NAEP, your raw data might look something like:
+
+2011 → 2013 → 2015 → 2017 → 2019 → 2022
+
+depending on the specific grade/subject assessment.
+
+Then you decide analytically how to classify the periods.
+
+That's actually much better for your paper because you'll be able to visualize the trends before making the treatment definition.
+
+So your immediate data-collection specification is:
+NAEP
+
+4th + 8th grade
+× Math + Reading
+× States
+× available assessment years ~2010–2022
+× subgroups
+
+with:
+
+Primary outcome: average scale score
+Secondary outcome: % at/above Proficient
+
+NCES
+
+State
+× available years ~2010–2022
+× subgroups
+
+with:
+
+Graduation rate
+Dropout rate
+
+ESSA
+
+State
+× accountability framework characteristics
+
+That is the right starting architecture.
+
+And I would not pull the data manually one state at a time. Since you've already been working with the NAEP API, this is a perfect opportunity to build a reproducible Python acquisition script that systematically queries the state × year × grade × subject × subgroup combinations and saves the raw responses. That becomes part of the research artifact for your R1 applications.
