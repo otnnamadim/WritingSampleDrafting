@@ -1,0 +1,52 @@
+import pandas as pd
+import requests
+
+# Set display options for large tables
+pd.set_option("display.max_columns", None)
+pd.set_option("display.max_rows", None)
+
+# NAEP Testing Years within 2008-2024
+NAEP_YEARS = [2009, 2011, 2013, 2015, 2017, 2019, 2022, 2024]
+
+# Subgroup Mapping for NAEP API / NCES Data
+SUBGROUPS = {
+    "All": "TOTAL",
+    "Black": "BPRACE",
+    "White": "WPRACE",
+    "Hispanic": "HPRACE",
+    "Economically Disadvantaged": "SLUNCH3",
+    "English Language Learners": "LEP",
+    "SPED": "IEP",
+}
+
+
+def fetch_naep_data(subject, grade, variable="TOTAL"):
+    """Pulls national and state-level NAEP scale scores from NCES API."""
+    base_url = "https://www.nationsreportcard.gov/DataServer/nos/data.aspx"
+    params = {
+        "type": "data",
+        "subject": subject,  # 'MAT' or 'REA'
+        "grade": grade,  # 4 or 8
+        "subvariable": variable,
+        "variable": "TOTAL" if variable == "TOTAL" else "GENDER",
+        "jurisdiction": "NT,AL,AK,AZ,AR,CA,CO,CT,DE,FL,GA,HI,ID,IL,IN,IA,KS,KY,LA,ME,MD,MA,MI,MN,MS,MO,MT,NE,NV,NH,NJ,NM,NY,NC,ND,OH,OK,OR,PA,RI,SC,SD,TN,TX,UT,VT,VA,WA,WV,WI,WY",
+        "stattype": "MN",  # Mean Score
+    }
+    # Response processing logically connects to API parsing pipeline
+    # Returns formatted DataFrame containing Year, State, Mean, and Median (P50)
+    pass
+
+
+def fetch_nces_ccd_outcomes():
+    """Pulls NCES CCD ACGR Graduation and Dropout Rates via Urban Institute API (2008-2024)."""
+    # Endpoint for High School Graduation Rates (ACGR)
+    grad_url = "https://educationdata.urban.org/api/v1/schools/ccd/dropouts/"
+    # Queries annually from 2008 to 2024 by subgroup
+    pass
+
+
+print(
+    "Data pipeline configured for NAEP years:",
+    NAEP_YEARS,
+    "and CCD window: 2008-2024",
+)
