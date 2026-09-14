@@ -1,0 +1,311 @@
+#Import into R from Python
+NAEP_Summary_2024 <- read.csv("/Users/ozoemenannamadim/PyCharmMiscProject/naep_summary_2024.csv")
+
+#Expand Data Table to expand columns Subject, Grade, and Subgroup 
+NAEP_2024_State_Summary <- pivot_wider(NAEP_Summary_2024, names_from = c(Subject, Grade, Subgroup), values_from = c(Mean, Median))
+
+#Prepare Box and Whisker Plots
+library(ggplot2)
+library(dplyr)
+
+# A. Filter the imported summary file for 4th Grade Math
+
+df_subgroups_4math_2024 <- NAEP_Summary_2024 %>%
+  filter(
+    Subject == "Mathematics",
+    Grade == "4",
+    !State %in% c("NT", "NP")  # Exclude national aggregates
+  ) %>%
+  mutate(
+    Mean = as.numeric(Mean),
+    Subgroup = factor(Subgroup, levels = c(
+      "All", "White", "Black", "Hispanic", 
+      "Economically Disadvantaged", "English Language Learners", "SPED"
+    ))
+  )
+
+# Calculate 4 Grade Math 2024 National Average
+nat_mean_math_4_2024 <- NAEP_Summary_2024 %>% 
+  filter(State == "NT", Subject == "Mathematics", Grade == "4", Subgroup == "All") %>% 
+  pull(Mean) %>% as.numeric()
+
+# 4 Grade Math 2024 Faceted Plot Construction
+fig_faceted_subgroups_2024_Math4 <- ggplot(df_subgroups_4math_2024, aes(x = Mean, y = 1, fill = Subgroup)) +
+  # Boxplot summary layer
+  geom_boxplot(width = 0.3, color = "gray30", outlier.shape = NA, alpha = 0.5) +
+  # Individual state jittered points layer (height controls vertical jitter around y = 1)
+  geom_jitter(aes(color = Subgroup), height = 0.08, alpha = 0.7, size = 1.5) +
+  # Fixed vertical national reference benchmark line
+  geom_vline(xintercept = nat_mean_math_4_2024, linetype = "dashed", color = "black", linewidth = 0.6) +
+  # Facet into 7 stacked panels with shared X-axis
+  facet_wrap(~ Subgroup, ncol = 1, strip.position = "left") +
+  scale_x_continuous(limits = c(190, 260), breaks = seq(190, 260, 10)) +
+  labs(
+    title = "State Score Distributions Across All 7 NAEP Subgroups (Grade 4 Math, 2024)",
+    subtitle = "Shared scale (190–260); Dashed line represents National Overall Mean",
+    x = "NAEP Mean Score",
+    y = ""
+  ) +
+ 
+  theme_minimal(base_size = 11) +
+  theme(
+    strip.text.y.left = element_text(angle = 0, face = "bold", hjust = 1),
+    strip.background = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank(),
+    legend.position = "none",
+    plot.title = element_text(face = "bold", size = 12)
+  )
+
+# Save visualization
+ggsave("faceted_NAEPMath42024_subgroup_distributions.png", plot = fig_faceted_subgroups_2024_Math4, width = 8, height = 11, dpi = 300)
+
+# Prepare a Box and Whisker Plot for 8th Grade Math 2024
+
+# Filter long-format summary data for 8th Grade Math (state level)
+df_subgroups_8math_2024 <- NAEP_Summary_2024 %>%
+  filter(
+    Subject == "Mathematics",
+    Grade == "8",
+    !State %in% c("NT", "NP")  # Exclude national aggregates
+  ) %>%
+  mutate(
+    Mean = as.numeric(Mean),
+    Subgroup = factor(Subgroup, levels = c(
+      "All", "White", "Black", "Hispanic", 
+      "Economically Disadvantaged", "English Language Learners", "SPED"
+    ))
+  )
+
+# Calculate Overall 8th Grade Math 2024 National Benchmark
+nat_mean_math_8_2024 <- NAEP_Summary_2024 %>% 
+  filter(State == "NT", Subject == "Mathematics", Grade == "8", Subgroup == "All") %>% 
+  pull(Mean) %>% as.numeric()
+
+# Faceted Plot Construction (Fixed y aesthetic mapping)
+fig_faceted_subgroups_Math8_2024 <- ggplot(df_subgroups_8math_2024, aes(x = Mean, y = 1, fill = Subgroup)) +
+  # Boxplot summary layer
+  geom_boxplot(width = 0.3, color = "gray30", outlier.shape = NA, alpha = 0.5) +
+  # Individual state jittered points layer (height controls vertical jitter around y = 1)
+  geom_jitter(aes(color = Subgroup), height = 0.08, alpha = 0.7, size = 1.5) +
+  # Fixed vertical national reference benchmark line
+  geom_vline(xintercept = nat_mean_math_8_2024, linetype = "dashed", color = "black", linewidth = 0.6) +
+  # Facet into 7 stacked panels with shared X-axis
+  facet_wrap(~ Subgroup, ncol = 1, strip.position = "left") +
+  scale_x_continuous(limits = c(220, 310), breaks = seq(220, 310, 10)) +
+  labs(
+    title = "State Score Distributions Across All 7 NAEP Subgroups (Grade 8 Math, 2024)",
+    subtitle = "Shared scale (220–310); Dashed line represents National Overall Mean",
+    x = "NAEP Mean Score",
+    y = ""
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(
+    strip.text.y.left = element_text(angle = 0, face = "bold", hjust = 1),
+    strip.background = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank(),
+    legend.position = "none",
+    plot.title = element_text(face = "bold", size = 12)
+  )
+
+# Save visualization
+ggsave("faceted_NAEPMath82024_subgroup_distributions.png", plot = fig_faceted_subgroups_Math8_2024, width = 8, height = 11, dpi = 300)
+
+#Calculate Achievement Gaps for 2024 NAEP Results
+
+library(tidyverse)
+library(readr)
+
+# 1. Clean and convert wide-format summary columns to numeric
+NAEP_2024_State_Summary_Clean <- NAEP_2024_State_Summary %>%
+  mutate(across(starts_with(c("Mean_", "Median_")), ~ parse_number(as.character(.x))))
+
+# 2. Calculate Academic Achievement Gaps
+NAEP_2024_Academic_Achievement_Gaps_Summary <- NAEP_2024_State_Summary_Clean %>%
+  transmute(
+    # Keep identifier columns
+    Year,
+    State,
+    
+    # --- 4th Grade Mathematics Mean ---
+    Mean_4_Math_White_v_All    = Mean_Mathematics_4_All - Mean_Mathematics_4_White,
+    Mean_4_Math_Black_v_All    = Mean_Mathematics_4_All - Mean_Mathematics_4_Black,
+    Mean_4_Math_Hispanic_v_All = Mean_Mathematics_4_All - Mean_Mathematics_4_Hispanic,
+    Mean_4_Math_At_Risk_v_All  = Mean_Mathematics_4_All - `Mean_Mathematics_4_Economically Disadvantaged`,
+    Mean_4_Math_ELL_v_All      = Mean_Mathematics_4_All - `Mean_Mathematics_4_English Language Learners`,
+    Mean_4_Math_SPED_v_All     = Mean_Mathematics_4_All - Mean_Mathematics_4_SPED,
+    
+    # --- 4th Grade Mathematics Median ---
+    Median_4_Math_White_v_All    = Median_Mathematics_4_All - Median_Mathematics_4_White,
+    Median_4_Math_Black_v_All    = Median_Mathematics_4_All - Median_Mathematics_4_Black,
+    Median_4_Math_Hispanic_v_All = Median_Mathematics_4_All - Median_Mathematics_4_Hispanic,
+    Median_4_Math_At_Risk_v_All  = Median_Mathematics_4_All - `Median_Mathematics_4_Economically Disadvantaged`,
+    Median_4_Math_ELL_v_All      = Median_Mathematics_4_All - `Median_Mathematics_4_English Language Learners`,
+    Median_4_Math_SPED_v_All     = Median_Mathematics_4_All - Median_Mathematics_4_SPED,
+    
+    # --- 8th Grade Mathematics Mean ---
+    Mean_8_Math_White_v_All    = Mean_Mathematics_8_All - Mean_Mathematics_8_White,
+    Mean_8_Math_Black_v_All    = Mean_Mathematics_8_All - Mean_Mathematics_8_Black,
+    Mean_8_Math_Hispanic_v_All = Mean_Mathematics_8_All - Mean_Mathematics_8_Hispanic,
+    Mean_8_Math_At_Risk_v_All  = Mean_Mathematics_8_All - `Mean_Mathematics_8_Economically Disadvantaged`,
+    Mean_8_Math_ELL_v_All      = Mean_Mathematics_8_All - `Mean_Mathematics_8_English Language Learners`,
+    Mean_8_Math_SPED_v_All     = Mean_Mathematics_8_All - Mean_Mathematics_8_SPED,
+    
+    # --- 8th Grade Mathematics Median ---
+    Median_8_Math_White_v_All    = Median_Mathematics_8_All - Median_Mathematics_8_White,
+    Median_8_Math_Black_v_All    = Median_Mathematics_8_All - Median_Mathematics_8_Black,
+    Median_8_Math_Hispanic_v_All = Median_Mathematics_8_All - Median_Mathematics_8_Hispanic,
+    Median_8_Math_At_Risk_v_All  = Median_Mathematics_8_All - `Median_Mathematics_8_Economically Disadvantaged`,
+    Median_8_Math_ELL_v_All      = Median_Mathematics_8_All - `Median_Mathematics_8_English Language Learners`,
+    Median_8_Math_SPED_v_All     = Median_Mathematics_8_All - Median_Mathematics_8_SPED,
+    
+    # --- 4th Grade Reading Mean ---
+    Mean_4_Reading_White_v_All    = Mean_Reading_4_All - Mean_Reading_4_White,
+    Mean_4_Reading_Black_v_All    = Mean_Reading_4_All - Mean_Reading_4_Black,
+    Mean_4_Reading_Hispanic_v_All = Mean_Reading_4_All - Mean_Reading_4_Hispanic,
+    Mean_4_Reading_At_Risk_v_All  = Mean_Reading_4_All - `Mean_Reading_4_Economically Disadvantaged`,
+    Mean_4_Reading_ELL_v_All      = Mean_Reading_4_All - `Mean_Reading_4_English Language Learners`,
+    Mean_4_Reading_SPED_v_All     = Mean_Reading_4_All - Mean_Reading_4_SPED,
+    
+    # --- 4th Grade Reading Median ---
+    Median_4_Reading_White_v_All    = Median_Reading_4_All - Median_Reading_4_White,
+    Median_4_Reading_Black_v_All    = Median_Reading_4_All - Median_Reading_4_Black,
+    Median_4_Reading_Hispanic_v_All = Median_Reading_4_All - Median_Reading_4_Hispanic,
+    Median_4_Reading_At_Risk_v_All  = Median_Reading_4_All - `Median_Reading_4_Economically Disadvantaged`,
+    Median_4_Reading_ELL_v_All      = Median_Reading_4_All - `Median_Reading_4_English Language Learners`,
+    Median_4_Reading_SPED_v_All     = Median_Reading_4_All - Median_Reading_4_SPED,
+    
+    # --- 8th Grade Reading Mean ---
+    Mean_8_Reading_White_v_All    = Mean_Reading_8_All - Mean_Reading_8_White,
+    Mean_8_Reading_Black_v_All    = Mean_Reading_8_All - Mean_Reading_8_Black,
+    Mean_8_Reading_Hispanic_v_All = Mean_Reading_8_All - Mean_Reading_8_Hispanic,
+    Mean_8_Reading_At_Risk_v_All  = Mean_Reading_8_All - `Mean_Reading_8_Economically Disadvantaged`,
+    Mean_8_Reading_ELL_v_All      = Mean_Reading_8_All - `Mean_Reading_8_English Language Learners`,
+    Mean_8_Reading_SPED_v_All     = Mean_Reading_8_All - Mean_Reading_8_SPED,
+    
+    # --- 8th Grade Reading Median ---
+    Median_8_Reading_White_v_All    = Median_Reading_8_All - Median_Reading_8_White,
+    Median_8_Reading_Black_v_All    = Median_Reading_8_All - Median_Reading_8_Black,
+    Median_8_Reading_Hispanic_v_All = Median_Reading_8_All - Median_Reading_8_Hispanic,
+    Median_8_Reading_At_Risk_v_All  = Median_Reading_8_All - `Median_Reading_8_Economically Disadvantaged`,
+    Median_8_Reading_ELL_v_All      = Median_Reading_8_All - `Median_Reading_8_English Language Learners`,
+    Median_8_Reading_SPED_v_All     = Median_Reading_8_All - Median_Reading_8_SPED
+  )
+
+
+library(ggplot2)
+library(dplyr)
+
+# Filter long-format summary data for 4th Grade Math (state level)
+df_subgroups_4reading_2024 <- NAEP_Summary_2024 %>%
+  filter(
+    Subject == "Reading",
+    Grade == "4",
+    !State %in% c("NT", "NP")  # Exclude national aggregates
+  ) %>%
+  mutate(
+    Mean = as.numeric(Mean),
+    Subgroup = factor(Subgroup, levels = c(
+      "All", "White", "Black", "Hispanic", 
+      "Economically Disadvantaged", "English Language Learners", "SPED"
+    ))
+  )
+
+# Calculate Overall National Benchmark
+nat_mean_reading_4_2024 <- NAEP_Summary_2024 %>% 
+  filter(State == "NT", Subject == "Reading", Grade == "4", Subgroup == "All") %>% 
+  pull(Mean) %>% as.numeric()
+
+# Faceted Plot Construction (Fixed y aesthetic mapping)
+fig_faceted_subgroups_Reading_4_2024 <- ggplot(df_subgroups_4reading_2024, aes(x = Mean, y = 1, fill = Subgroup)) +
+  # Boxplot summary layer
+  geom_boxplot(width = 0.3, color = "gray30", outlier.shape = NA, alpha = 0.5) +
+  # Individual state jittered points layer (height controls vertical jitter around y = 1)
+  geom_jitter(aes(color = Subgroup), height = 0.08, alpha = 0.7, size = 1.5) +
+  # Fixed vertical national reference benchmark line
+  geom_vline(xintercept = nat_mean_reading_4_2024, linetype = "dashed", color = "black", linewidth = 0.6) +
+  # Facet into 7 stacked panels with shared X-axis
+  facet_wrap(~ Subgroup, ncol = 1, strip.position = "left") +
+  scale_x_continuous(limits = c(180, 250), breaks = seq(180, 250, 10)) +
+  labs(
+    title = "State Score Distributions Across All 7 NAEP Subgroups (Grade 4 Reading, 2024)",
+    subtitle = "Shared scale (180–250); Dashed line represents National Overall Mean",
+    x = "NAEP Mean Score",
+    y = ""
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(
+    strip.text.y.left = element_text(angle = 0, face = "bold", hjust = 1),
+    strip.background = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank(),
+    legend.position = "none",
+    plot.title = element_text(face = "bold", size = 12)
+  )
+
+# Save visualization
+ggsave("faceted_NAEPReading42024_subgroup_distributions.png", plot = fig_faceted_subgroups_Reading_4_2024, width = 8, height = 11, dpi = 300)
+
+library(ggplot2)
+library(dplyr)
+
+# Filter long-format summary data for 4th Grade Math (state level)
+df_subgroups_8reading_2024 <- NAEP_Summary_2024 %>%
+  filter(
+    Subject == "Reading",
+    Grade == "8",
+    !State %in% c("NT", "NP")  # Exclude national aggregates
+  ) %>%
+  mutate(
+    Mean = as.numeric(Mean),
+    Subgroup = factor(Subgroup, levels = c(
+      "All", "White", "Black", "Hispanic", 
+      "Economically Disadvantaged", "English Language Learners", "SPED"
+    ))
+  )
+
+# Calculate Overall National Benchmark
+nat_mean_reading_8_2024 <- NAEP_Summary_2024 %>% 
+  filter(State == "NT", Subject == "Reading", Grade == "8", Subgroup == "All") %>% 
+  pull(Mean) %>% as.numeric()
+
+# Faceted Plot Construction (Fixed y aesthetic mapping)
+fig_faceted_subgroups_reading_8_2024 <- ggplot(df_subgroups_8reading_2024, aes(x = Mean, y = 1, fill = Subgroup)) +
+  # Boxplot summary layer
+  geom_boxplot(width = 0.3, color = "gray30", outlier.shape = NA, alpha = 0.5) +
+  # Individual state jittered points layer (height controls vertical jitter around y = 1)
+  geom_jitter(aes(color = Subgroup), height = 0.08, alpha = 0.7, size = 1.5) +
+  # Fixed vertical national reference benchmark line
+  geom_vline(xintercept = nat_mean_reading_8_2024, linetype = "dashed", color = "black", linewidth = 0.6) +
+  # Facet into 7 stacked panels with shared X-axis
+  facet_wrap(~ Subgroup, ncol = 1, strip.position = "left") +
+  scale_x_continuous(limits = c(220, 310), breaks = seq(220, 310, 10)) +
+  labs(
+    title = "State Score Distributions Across All 7 NAEP Subgroups (Grade 8 Reading, 2024)",
+    subtitle = "Shared scale (220–310); Dashed line represents National Overall Mean",
+    x = "NAEP Mean Score",
+    y = ""
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(
+    strip.text.y.left = element_text(angle = 0, face = "bold", hjust = 1),
+    strip.background = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank(),
+    legend.position = "none",
+    plot.title = element_text(face = "bold", size = 12)
+  )
+
+# Save visualization
+ggsave("faceted_NAEPReading82024_subgroup_distributions.png", plot = fig_faceted_subgroups_reading_8_2024, width = 8, height = 11, dpi = 300)
+
+
