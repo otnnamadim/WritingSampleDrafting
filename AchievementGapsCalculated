@@ -1,0 +1,90 @@
+library(tidyverse)
+
+# 1. Reshape long pipeline output into wide format
+NAEP_2009_Wide <- NAEP_2009_Summary %>%
+  # Fix spaces in Subgroup names to create valid R column names
+  mutate(
+    Subgroup = case_when(
+      Subgroup == "Economically Disadvantaged" ~ "Economically_Disadvantaged",
+      Subgroup == "English Language Learners" ~ "English_Language_Learners",
+      TRUE ~ Subgroup
+    ),
+    # Numeric conversions
+    Mean = as.numeric(Mean),
+    Median = as.numeric(Median)
+  ) %>%
+  # Pivot Mean and Median into separate columns per metric-subject-grade-subgroup
+  pivot_wider(
+    id_cols = c(Year, State),
+    names_from = c(Subject, Grade, Subgroup),
+    values_from = c(Mean, Median),
+    names_sep = "_"
+  )
+
+# 2. Calculate Academic Achievement Gaps
+NAEP_2009_Academic_Achievement_Gaps_Summary <- NAEP_2009_Wide %>%
+  mutate(
+    # --- 4th Grade Mathematics Mean ---
+    Mean_4_Math_White_v_All    = Mean_Mathematics_4_All - Mean_Mathematics_4_White,
+    Mean_4_Math_Black_v_All    = Mean_Mathematics_4_All - Mean_Mathematics_4_Black,
+    Mean_4_Math_Hispanic_v_All = Mean_Mathematics_4_All - Mean_Mathematics_4_Hispanic,
+    Mean_4_Math_At_Risk_v_All  = Mean_Mathematics_4_All - Mean_Mathematics_4_Economically_Disadvantaged,
+    Mean_4_Math_ELL_v_All      = Mean_Mathematics_4_All - Mean_Mathematics_4_English_Language_Learners,
+    Mean_4_Math_SPED_v_All     = Mean_Mathematics_4_All - Mean_Mathematics_4_SPED,
+
+    # --- 4th Grade Mathematics Median ---
+    Median_4_Math_White_v_All    = Median_Mathematics_4_All - Median_Mathematics_4_White,
+    Median_4_Math_Black_v_All    = Median_Mathematics_4_All - Median_Mathematics_4_Black,
+    Median_4_Math_Hispanic_v_All = Median_Mathematics_4_All - Median_Mathematics_4_Hispanic,
+    Median_4_Math_At_Risk_v_All  = Median_Mathematics_4_All - Median_Mathematics_4_Economically_Disadvantaged,
+    Median_4_Math_ELL_v_All      = Median_Mathematics_4_All - Median_Mathematics_4_English_Language_Learners,
+    Median_4_Math_SPED_v_All     = Median_Mathematics_4_All - Median_Mathematics_4_SPED,
+
+    # --- 8th Grade Mathematics Mean ---
+    Mean_8_Math_White_v_All    = Mean_Mathematics_8_All - Mean_Mathematics_8_White,
+    Mean_8_Math_Black_v_All    = Mean_Mathematics_8_All - Mean_Mathematics_8_Black,
+    Mean_8_Math_Hispanic_v_All = Mean_Mathematics_8_All - Mean_Mathematics_8_Hispanic,
+    Mean_8_Math_At_Risk_v_All  = Mean_Mathematics_8_All - Mean_Mathematics_8_Economically_Disadvantaged,
+    Mean_8_Math_ELL_v_All      = Mean_Mathematics_8_All - Mean_Mathematics_8_English_Language_Learners,
+    Mean_8_Math_SPED_v_All     = Mean_Mathematics_8_All - Mean_Mathematics_8_SPED,
+
+    # --- 8th Grade Mathematics Median ---
+    Median_8_Math_White_v_All    = Median_Mathematics_8_All - Median_Mathematics_8_White,
+    Median_8_Math_Black_v_All    = Median_Mathematics_8_All - Median_Mathematics_8_Black,
+    Median_8_Math_Hispanic_v_All = Median_Mathematics_8_All - Median_Mathematics_8_Hispanic,
+    Median_8_Math_At_Risk_v_All  = Median_Mathematics_8_All - Median_Mathematics_8_Economically_Disadvantaged,
+    Median_8_Math_ELL_v_All      = Median_Mathematics_8_All - Median_Mathematics_8_English_Language_Learners,
+    Median_8_Math_SPED_v_All     = Median_Mathematics_8_All - Median_Mathematics_8_SPED,
+
+    # --- 4th Grade Reading Mean ---
+    Mean_4_Reading_White_v_All    = Mean_Reading_4_All - Mean_Reading_4_White,
+    Mean_4_Reading_Black_v_All    = Mean_Reading_4_All - Mean_Reading_4_Black,
+    Mean_4_Reading_Hispanic_v_All = Mean_Reading_4_All - Mean_Reading_4_Hispanic,
+    Mean_4_Reading_At_Risk_v_All  = Mean_Reading_4_All - Mean_Reading_4_Economically_Disadvantaged,
+    Mean_4_Reading_ELL_v_All      = Mean_Reading_4_All - Mean_Reading_4_English_Language_Learners,
+    Mean_4_Reading_SPED_v_All     = Mean_Reading_4_All - Mean_Reading_4_SPED,
+
+    # --- 4th Grade Reading Median ---
+    Median_4_Reading_White_v_All    = Median_Reading_4_All - Median_Reading_4_White,
+    Median_4_Reading_Black_v_All    = Median_Reading_4_All - Median_Reading_4_Black,
+    Median_4_Reading_Hispanic_v_All = Median_Reading_4_All - Median_Reading_4_Hispanic,
+    Median_4_Reading_At_Risk_v_All  = Median_Reading_4_All - Median_Reading_4_Economically_Disadvantaged,
+    Median_4_Reading_ELL_v_All      = Median_Reading_4_All - Median_Reading_4_English_Language_Learners,
+    Median_4_Reading_SPED_v_All     = Median_Reading_4_All - Median_Reading_4_SPED,
+
+    # --- 8th Grade Reading Mean ---
+    Mean_8_Reading_White_v_All    = Mean_Reading_8_All - Mean_Reading_8_White,
+    Mean_8_Reading_Black_v_All    = Mean_Reading_8_All - Mean_Reading_8_Black,
+    Mean_8_Reading_Hispanic_v_All = Mean_Reading_8_All - Mean_Reading_8_Hispanic,
+    Mean_8_Reading_At_Risk_v_All  = Mean_Reading_8_All - Mean_Reading_8_Economically_Disadvantaged,
+    Mean_8_Reading_ELL_v_All      = Mean_Reading_8_All - Mean_Reading_8_English_Language_Learners,
+    Mean_8_Reading_SPED_v_All     = Mean_Reading_8_All - Mean_Reading_8_SPED,
+
+    # --- 8th Grade Reading Median ---
+    Median_8_Reading_White_v_All    = Median_Reading_8_All - Median_Reading_8_White,
+    Median_8_Reading_Black_v_All    = Median_Reading_8_All - Median_Reading_8_Black,
+    Median_8_Reading_Hispanic_v_All = Median_Reading_8_All - Median_Reading_8_Hispanic,
+    Median_8_Reading_At_Risk_v_All  = Median_Reading_8_All - Median_Reading_8_Economically_Disadvantaged,
+    Median_8_Reading_ELL_v_All      = Median_Reading_8_All - Median_Reading_8_English_Language_Learners,
+    Median_8_Reading_SPED_v_All     = Median_Reading_8_All - Median_Reading_8_SPED
+  )
