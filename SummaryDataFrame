@@ -1,0 +1,33 @@
+library(tidyverse)
+
+summary_df <- df %>%
+  # Select all subject/grade/year columns
+  select(matches("^(nat|state|...)_(math|reading)_[48]_\\d{4}$")) %>% 
+  
+  # Pivot all columns into long format
+  pivot_longer(
+    cols = everything(),
+    names_to = c("subject", "grade", "year"),
+    names_pattern = ".*_(math|reading)_([48])_(\\d{4})",
+    values_to = "value"
+  ) %>%
+  
+  # Group by subject, grade, and year to compute metrics
+  group_by(subject, grade, year) %>%
+  summarize(
+    Average = mean(value, na.rm = TRUE),
+    Min     = min(value, na.rm = TRUE),
+    Median  = median(value, na.rm = TRUE),
+    Max     = max(value, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  
+  # Pivot metrics to long format, then pivot years wide
+  pivot_longer(cols = c(Average, Min, Median, Max), names_to = "Metric", values_to = "Val") %>%
+  pivot_wider(names_from = year, values_from = Val) %>%
+  
+  # Format subject & grade labels to match your target layout
+  mutate(
+    Group = paste("NAEP", str_to_title(subject), grade)
+  ) %>%
+  select(Group, Metric, everything(), -subject, -grade)
