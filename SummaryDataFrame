@@ -1,3 +1,6 @@
+Purpose: The purpose of this script is to aggregate each of the individual summary files across assessment years and prepare a summary table that describes the national averages and trends in the national averages across subgroup. It is similiar to the box plot distributions, but with more quantitative analysis. Further, it's easier to see the trends and gaps in performance over time for each subgroup which serves as the fundamental basis for measurement of the differences in what is being measured over time for the NCLB to ESSA implementation.
+
+
 library(tidyverse)
 
 summary_df <- df %>%
