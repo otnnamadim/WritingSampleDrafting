@@ -19,7 +19,7 @@ df_subgroups_4math <- NAEP_Summary_2009 %>%
   )
 
 # Calculate Overall National Benchmark
-nat_mean <- NAEP_Summary_2009 %>% 
+nat_mean_math_4_2009 <- NAEP_Summary_2009 %>% 
   filter(State == "NT", Subject == "Mathematics", Grade == "4", Subgroup == "All") %>% 
   pull(Mean) %>% as.numeric()
 
@@ -30,7 +30,7 @@ fig_faceted_subgroups <- ggplot(df_subgroups_4math, aes(x = Mean, y = 1, fill = 
   # Individual state jittered points layer (height controls vertical jitter around y = 1)
   geom_jitter(aes(color = Subgroup), height = 0.08, alpha = 0.7, size = 1.5) +
   # Fixed vertical national reference benchmark line
-  geom_vline(xintercept = nat_mean, linetype = "dashed", color = "black", linewidth = 0.6) +
+  geom_vline(xintercept = nat_mean_math_4_2009, linetype = "dashed", color = "black", linewidth = 0.6) +
   # Facet into 7 stacked panels with shared X-axis
   facet_wrap(~ Subgroup, ncol = 1, strip.position = "left") +
   scale_x_continuous(limits = c(190, 260), breaks = seq(190, 260, 10)) +
@@ -53,12 +53,11 @@ fig_faceted_subgroups <- ggplot(df_subgroups_4math, aes(x = Mean, y = 1, fill = 
   )
 
 # Save visualization
-ggsave("faceted_NAEPMath4_subgroup_distributions.png", plot = fig_faceted_subgroups, width = 8, height = 11, dpi = 300)
+ggsave("faceted_NAEPMath42009_subgroup_distributionsv2.png", plot = fig_faceted_subgroups, width = 8, height = 11, dpi = 300)
 
 
 
-#To be updated for Mean of 2009 8th Grade Math
-------Box and Whisker Plot for NAEP 8th Grade Math 2009-----
+#Box and Whisker for 8th Grade Math NAEP
 
 library(ggplot2)
 library(dplyr)
@@ -79,8 +78,8 @@ df_subgroups_8math <- NAEP_Summary_2009 %>%
   )
 
 # Calculate Overall National Benchmark
-nat_mean <- NAEP_Summary_2009 %>% 
-  filter(State == "NT", Subject == "Mathematics", Grade == "4", Subgroup == "All") %>% 
+nat_mean_math_8_2009 <- NAEP_Summary_2009 %>% 
+  filter(State == "NT", Subject == "Mathematics", Grade == "8", Subgroup == "All") %>% 
   pull(Mean) %>% as.numeric()
 
 # Faceted Plot Construction (Fixed y aesthetic mapping)
@@ -90,12 +89,68 @@ fig_faceted_subgroups <- ggplot(df_subgroups_8math, aes(x = Mean, y = 1, fill = 
   # Individual state jittered points layer (height controls vertical jitter around y = 1)
   geom_jitter(aes(color = Subgroup), height = 0.08, alpha = 0.7, size = 1.5) +
   # Fixed vertical national reference benchmark line
-  geom_vline(xintercept = nat_mean, linetype = "dashed", color = "black", linewidth = 0.6) +
+  geom_vline(xintercept = nat_mean_math_8_2009, linetype = "dashed", color = "black", linewidth = 0.6) +
   # Facet into 7 stacked panels with shared X-axis
   facet_wrap(~ Subgroup, ncol = 1, strip.position = "left") +
   scale_x_continuous(limits = c(190, 260), breaks = seq(190, 260, 10)) +
   labs(
     title = "State Score Distributions Across All 7 NAEP Subgroups (Grade 8 Math, 2009)",
+    subtitle = "Shared scale (190–300); Dashed line represents National Overall Mean",
+    x = "NAEP Mean Score",
+    y = ""
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(
+    strip.text.y.left = element_text(angle = 0, face = "bold", hjust = 1),
+    strip.background = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank(),
+    legend.position = "none",
+    plot.title = element_text(face = "bold", size = 12)
+  )
+
+# Save visualization
+ggsave("faceted_NAEPMath82009_subgroup_distributionsv2.png", plot = fig_faceted_subgroups, width = 8, height = 11, dpi = 300)
+
+
+library(ggplot2)
+library(dplyr)
+
+# Filter long-format summary data for 4th Grade Math (state level)
+df_subgroups_4reading <- NAEP_Summary_2009 %>%
+  filter(
+    Subject == "Reading",
+    Grade == "4",
+    !State %in% c("NT", "NP")  # Exclude national aggregates
+  ) %>%
+  mutate(
+    Mean = as.numeric(Mean),
+    Subgroup = factor(Subgroup, levels = c(
+      "All", "White", "Black", "Hispanic", 
+      "Economically Disadvantaged", "English Language Learners", "SPED"
+    ))
+  )
+
+# Calculate Overall National Benchmark
+nat_mean_reading_4_2009 <- NAEP_Summary_2009 %>% 
+  filter(State == "NT", Subject == "Reading", Grade == "4", Subgroup == "All") %>% 
+  pull(Mean) %>% as.numeric()
+
+# Faceted Plot Construction (Fixed y aesthetic mapping)
+fig_faceted_subgroups <- ggplot(df_subgroups_4reading, aes(x = Mean, y = 1, fill = Subgroup)) +
+  # Boxplot summary layer
+  geom_boxplot(width = 0.3, color = "gray30", outlier.shape = NA, alpha = 0.5) +
+  # Individual state jittered points layer (height controls vertical jitter around y = 1)
+  geom_jitter(aes(color = Subgroup), height = 0.08, alpha = 0.7, size = 1.5) +
+  # Fixed vertical national reference benchmark line
+  geom_vline(xintercept = nat_mean_reading_4_2009, linetype = "dashed", color = "black", linewidth = 0.6) +
+  # Facet into 7 stacked panels with shared X-axis
+  facet_wrap(~ Subgroup, ncol = 1, strip.position = "left") +
+  scale_x_continuous(limits = c(190, 260), breaks = seq(190, 260, 10)) +
+  labs(
+    title = "State Score Distributions Across All 7 NAEP Subgroups (Grade 4 Reading, 2009)",
     subtitle = "Shared scale (190–260); Dashed line represents National Overall Mean",
     x = "NAEP Mean Score",
     y = ""
@@ -113,10 +168,63 @@ fig_faceted_subgroups <- ggplot(df_subgroups_8math, aes(x = Mean, y = 1, fill = 
   )
 
 # Save visualization
-ggsave("faceted_NAEPMath8_subgroup_distributions.png", plot = fig_faceted_subgroups, width = 8, height = 11, dpi = 300)
+ggsave("faceted_NAEPReading42009_subgroup_distributions.png", plot = fig_faceted_subgroups, width = 8, height = 11, dpi = 300)
 
 
+library(ggplot2)
+library(dplyr)
 
+# Filter long-format summary data for 4th Grade Math (state level)
+df_subgroups_8reading <- NAEP_Summary_2009 %>%
+  filter(
+    Subject == "Reading",
+    Grade == "8",
+    !State %in% c("NT", "NP")  # Exclude national aggregates
+  ) %>%
+  mutate(
+    Mean = as.numeric(Mean),
+    Subgroup = factor(Subgroup, levels = c(
+      "All", "White", "Black", "Hispanic", 
+      "Economically Disadvantaged", "English Language Learners", "SPED"
+    ))
+  )
+
+# Calculate Overall National Benchmark
+nat_mean_reading_8_2009 <- NAEP_Summary_2009 %>% 
+  filter(State == "NT", Subject == "Reading", Grade == "8", Subgroup == "All") %>% 
+  pull(Mean) %>% as.numeric()
+
+# Faceted Plot Construction (Fixed y aesthetic mapping)
+fig_faceted_subgroups <- ggplot(df_subgroups_4reading, aes(x = Mean, y = 1, fill = Subgroup)) +
+  # Boxplot summary layer
+  geom_boxplot(width = 0.3, color = "gray30", outlier.shape = NA, alpha = 0.5) +
+  # Individual state jittered points layer (height controls vertical jitter around y = 1)
+  geom_jitter(aes(color = Subgroup), height = 0.08, alpha = 0.7, size = 1.5) +
+  # Fixed vertical national reference benchmark line
+  geom_vline(xintercept = nat_mean_reading_8_2009, linetype = "dashed", color = "black", linewidth = 0.6) +
+  # Facet into 7 stacked panels with shared X-axis
+  facet_wrap(~ Subgroup, ncol = 1, strip.position = "left") +
+  scale_x_continuous(limits = c(190, 260), breaks = seq(190, 260, 10)) +
+  labs(
+    title = "State Score Distributions Across All 7 NAEP Subgroups (Grade 8 Reading, 2009)",
+    subtitle = "Shared scale (190–260); Dashed line represents National Overall Mean",
+    x = "NAEP Mean Score",
+    y = ""
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(
+    strip.text.y.left = element_text(angle = 0, face = "bold", hjust = 1),
+    strip.background = element_blank(),
+    axis.text.y = element_blank(),
+    axis.ticks.y = element_blank(),
+    panel.grid.minor = element_blank(),
+    panel.grid.major.y = element_blank(),
+    legend.position = "none",
+    plot.title = element_text(face = "bold", size = 12)
+  )
+
+# Save visualization
+ggsave("faceted_NAEPReading82009_subgroup_distributions.png", plot = fig_faceted_subgroups, width = 8, height = 11, dpi = 300)
 
 
 # -----------------------------------------------------------------------------
