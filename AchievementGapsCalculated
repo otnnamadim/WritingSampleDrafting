@@ -115,7 +115,7 @@ NAEP_2011_Wide <- NAEP_Summary_2011 %>%
   )
 
 # 2. Calculate Academic Achievement Gaps
-NAEP_2011_Academic_Achievement_Gaps_Summary <- NAEP_2011_Wide %>%
+NAEP_Academic_Achievement_Gaps_Summary_2011 <- NAEP_2011_Wide %>%
   mutate(
     # --- 4th Grade Mathematics Mean ---
     Mean_4_Math_White_v_All    = Mean_Mathematics_4_All - Mean_Mathematics_4_White,
