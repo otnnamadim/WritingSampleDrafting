@@ -1,0 +1,101 @@
+# The NAEP Pipeline extracts the National Reading and Math results for each State, Subgroup, and Test Administration year. The results are populated in the following export files:
+- naep_summary_2009.csv (1,4556 rows, 7 columns)
+- naep_summary_2011.csv 
+- naep_summary_2013.csv
+- naep_summary_2015.csv
+- naep_summary_2017.csv
+- naep_summary_2019.csv
+- naep_summary_2022.csv
+- naep_summary_2024.csv
+
+#Within R, I prepared pulled the extraction via the following:
+- NAEP_Summary_20XX <- read.csv("[NAEP Summary File Location]")
+
+#Given that each file is extracted in a summary file containing only the following seven variables:
+- Year
+- State
+- Subject
+- Grade
+- Subgroup
+- Mean
+- Median
+
+#I ran the pivot to transform each pivot into a more useful dataset that illustrates the outcomes for each subgroup, and subject by state utilizing the following formula:
+NAEP_20XX_State_Summary <- pivot_wider(NAEP_Summary_20XX, names_from = c(Subject, Grade, Subgroup), values_from = c(Mean, Median))
+
+
+The program worked to pull the composite math, but it failed to pull subgroup and reading scores. I thinkn the variables should be updated. Here's a listing of the variables I think should be included based on what I found on the website: 
+https://www.nationsreportcard.gov/api_documentation.aspx
+
+Variables:
+- Math Composite Scale - MRPCM
+- Reading Composite Scale - RRPCM
+
+Jurisdictions:
+- NT
+- NP
+- AL – Alabama
+- AK – Alaska
+- AZ – Arizona
+- AR – Arkansas
+- CA – California
+- CO – Colorado
+- CT – Connecticut
+- DE – Delaware
+- DC – District of Columbia
+- FL – Florida
+- GA – Georgia
+- HI – Hawaii
+- ID – Idaho
+- IL – Illinois
+- IN – Indiana
+- IA – Iowa
+- KS – Kansas
+- KY – Kentucky
+- LA – Louisiana
+- ME – Maine
+- MD – Maryland
+- MA – Massachusetts
+- MI – Michigan
+- MN – Minnesota
+- MS – Mississippi
+- MO – Missouri
+- MT – Montana
+- NE – Nebraska
+- NV – Nevada
+- NH – New Hampshire
+- NJ – New Jersey
+- NM – New Mexico
+- NY – New York
+- NC – North Carolina
+- ND – North Dakota
+- OH – Ohio
+- OK – Oklahoma
+- OR – Oregon
+- PA – Pennsylvania
+- RI – Rhode Island
+- SC – South Carolina
+- SD – South Dakota
+- TN – Tennessee
+- TX – Texas
+- UT – Utah
+- VT – Vermont
+- VA – Virginia
+- WA – Washington
+- WV – West Virginia
+- WI – Wisconsin
+- WY – Wyoming
+
+StatType:
+- MN:MN – Mean
+- PC:P2 – 25th percentile
+- PC:P5 – 50th percentile
+- PC:P9 – 90th percentile
+
+Variable:
+- TOTAL – All students
+- SDRACE – Race/ethnicity used to report trends
+- SRACE10 – Race/ethnicity using 2011 guidelines
+- SLUNCH3 – National School Lunch Program eligibility
+- IEP – Disability status of student, including those with 504 plan
+- LEP – Status as English language learner
