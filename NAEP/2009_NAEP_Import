@@ -1,10 +1,6 @@
 #Install the reequired libraries
 library(ggplot2)
 library(dplyr)
-library(ggplot2)
-library(dplyr)
-library(ggplot2)
-library(dplyr)
 
 
 #Import into R from Python
