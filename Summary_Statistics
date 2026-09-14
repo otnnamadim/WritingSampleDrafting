@@ -1,0 +1,25 @@
+Summary Statistics
+
+
+
+library(dplyr)
+
+NAEP_2009_Math_4_Summary_Statistics <- NAEP_2009_State_Summary %>%
+  summarize(across(c(Mean_Mathematics_4_All, Mean_Mathematics_4_White, Mean_Mathematics_4_Black, Mean_Mathematics_4_Hispanic, `Mean_Mathematics_4_Economically Disadvantaged`, `Mean_Mathematics_4_English Language Learners`, Mean_Mathematics_4_SPED), list(
+    mean   = ~ mean(.x, na.rm = TRUE),
+    median = ~ median(.x, na.rm = TRUE),
+    mode   = ~ get_mode(.x),
+    min    = ~ min(.x, na.rm = TRUE),
+    max    = ~ max(.x, na.rm = TRUE),
+    range  = ~ diff(range(.x, na.rm = TRUE)),
+    q1     = ~ quantile(.x, 0.25, na.rm = TRUE),
+    q3     = ~ quantile(.x, 0.75, na.rm = TRUE)
+  )))
+
+NAEP_2009_Math_4_Summary_Statistics <- NAEP_2009_Math_4_Summary_Statistics %>%
+  pivot_longer(
+    cols = everything(),
+    names_to = "variable",
+    values_to = "value"
+  )
+
