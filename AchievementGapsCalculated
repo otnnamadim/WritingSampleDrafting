@@ -1,7 +1,7 @@
 library(tidyverse)
 
 # 1. Reshape long pipeline output into wide format
-NAEP_2009_Wide <- NAEP_2009_Summary %>%
+NAEP_2009_Wide <- NAEP_Summary_2009 %>%
   # Fix spaces in Subgroup names to create valid R column names
   mutate(
     Subgroup = case_when(
