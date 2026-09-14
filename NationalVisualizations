@@ -1,0 +1,73 @@
+library(ggplot2)
+library(dplyr)
+
+# Standardized Theme for Economics Papers
+theme_econ <- function() {
+  theme_minimal(base_size = 11) +
+    theme(
+      panel.grid.minor = element_blank(),
+      plot.title = element_text(face = "bold", size = 12, hjust = 0),
+      plot.subtitle = element_text(size = 10, color = "gray30"),
+      axis.title = element_text(face = "bold", size = 10),
+      legend.position = "bottom",
+      legend.title = element_blank()
+    )
+}
+
+# -----------------------------------------------------------------------------
+# 1. MAIN TEXT: Compact Distribution Plot with Benchmarks
+# -----------------------------------------------------------------------------
+# Filter out national aggregates to plot state points only
+df_states <- NAEP_2009_Wide %>% filter(!State %in% c("NT", "NP"))
+nat_mean  <- NAEP_2009_Wide %>% filter(State == "NT") %>% pull(Mean_Mathematics_4_All)
+pub_mean  <- NAEP_2009_Wide %>% filter(State == "NP") %>% pull(Mean_Mathematics_4_All)
+
+fig_distribution <- ggplot(df_states, aes(x = Mean_Mathematics_4_All, y = 1)) +
+  
+# Boxplot layer
+  geom_boxplot(width = 0.15, fill = "gray95", color = "gray40", outlier.shape = NA) +
+  
+# Individual state points with slight vertical jitter
+  geom_jitter(height = 0.08, color = "#5c8f2b", alpha = 0.7, size = 2) +
+ 
+# Benchmark lines
+  geom_vline(xintercept = nat_mean, color = "#d95f02", linetype = "dashed", size = 0.8) +
+  geom_vline(xintercept = pub_mean, color = "#7570b3", linetype = "dotted", size = 0.8) +
+ 
+# Custom Labels
+  annotate("text", x = nat_mean, y = 1.25, label = paste("National Avg:", round(nat_mean, 1)), 
+           color = "#d95f02", fontface = "bold", size = 3.5, angle = 90, vjust = -0.5) +
+  annotate("text", x = pub_mean, y = 1.25, label = paste("National Public:", round(pub_mean, 1)), 
+           color = "#7570b3", fontface = "bold", size = 3.5, angle = 90, vjust = 1.5) +
+  labs(
+    title = "Figure 1: Distribution of State Mean Scores (Grade 4 Mathematics, 2009)",
+    x = "NAEP Mean Score",
+    y = ""
+  ) +
+  scale_y_continuous(breaks = NULL) +
+  theme_econ()
+
+ggsave("figure1_distributionv2.png", plot = fig_distribution, width = 7, height = 3.5, dpi = 300) 
+
+
+# -----------------------------------------------------------------------------
+# 2. APPENDIX: Ranked Horizontal Bar Chart
+# -----------------------------------------------------------------------------
+fig_ranked_bars <- df_states %>%
+  # Reorder State factor levels by Mean Score for horizontal ranking
+  mutate(State = reorder(State, Mean_Mathematics_4_All)) %>%
+  ggplot(aes(x = Mean_Mathematics_4_All, y = State)) +
+  geom_col(fill = "#2b5c8f", width = 0.7) +
+  # Add National Benchmark Reference Lines
+  geom_vline(xintercept = nat_mean, color = "#d95f02", linetype = "dashed", size = 0.8) +
+  geom_vline(xintercept = pub_mean, color = "#7570b3", linetype = "dotted", size = 0.8) +
+  labs(
+    title = "Figure A1: Ranked State Mean Scores (Grade 4 Mathematics, 2009)",
+    subtitle = "Dashed line = National Total Average; Dotted line = National Public Average",
+    x = "NAEP Mean Score",
+    y = "State"
+  ) +
+  theme_econ() +
+  theme(panel.grid.major.y = element_blank()) # Clean horizontal lines for state bars
+
+ggsave("figureA1_ranked_bars.png", plot = fig_ranked_bars, width = 7, height = 9, dpi = 300)
