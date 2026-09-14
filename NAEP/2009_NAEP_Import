@@ -3,15 +3,17 @@ library(ggplot2)
 library(dplyr)
 
 
-#Import into R from Python
+#A. Import into R from Python
 NAEP_Summary_2009 <- read.csv("/Users/ozoemenannamadim/PyCharmMiscProject/naep_summary_2009.csv")
 
-#Expand Data Table to expand columns Subject, Grade, and Subgroup 
+#B. Expand Data Table to expand columns Subject, Grade, and Subgroup 
 NAEP_2009_State_Summary <- pivot_wider(NAEP_Summary_2009, names_from = c(Subject, Grade, Subgroup), values_from = c(Mean, Median))
 
-#Build a Data Frame for each NAEP Assessment for the Year
+#C. Build a Data Frame for each NAEP Assessment for the Year
 
-#Fourt Grade Mathematics
+#C.1 - Mathematics:
+
+#C.1.a - Fourt Grade Mathematics
 df_subgroups_4math_2009 <- NAEP_Summary_2009 %>%
   filter(
     Subject == "Mathematics",
@@ -26,7 +28,7 @@ df_subgroups_4math_2009 <- NAEP_Summary_2009 %>%
     ))
   )
 
-#8th Grade Mathematics
+#C.1.b - 8th Grade Mathematics
 df_subgroups_8math_2009 <- NAEP_Summary_2009 %>%
   filter(
     Subject == "Mathematics",
@@ -41,7 +43,8 @@ df_subgroups_8math_2009 <- NAEP_Summary_2009 %>%
     ))
   )
 
-#4th Grade Reading
+#C.2 - Reading:
+#C.2.a - 4th Grade Reading
 df_subgroups_4reading_2009 <- NAEP_Summary_2009 %>%
   filter(
     Subject == "Reading",
@@ -56,7 +59,7 @@ df_subgroups_4reading_2009 <- NAEP_Summary_2009 %>%
     ))
   )
 
-#8th Grade Reading
+#C.2.b - 8th Grade Reading
 df_subgroups_8reading_2009 <- NAEP_Summary_2009 %>%
   filter(
     Subject == "Reading",
@@ -71,28 +74,30 @@ df_subgroups_8reading_2009 <- NAEP_Summary_2009 %>%
     ))
   )
 
-#Calculate the National Averages for Each Assessment
+#D. Calculate the National Averages for Each Assessment
 
-#4th Grade Mathematics
+#D.1 - 4th Grade Mathematics
 nat_mean_math_4_2009 <- NAEP_Summary_2009 %>% 
   filter(State == "NT", Subject == "Mathematics", Grade == "4", Subgroup == "All") %>% 
   pull(Mean) %>% as.numeric()
 
-#8th Grade Mathematics
+#D.2 - 8th Grade Mathematics
 nat_mean_math_8_2009 <- NAEP_Summary_2009 %>% 
   filter(State == "NT", Subject == "Mathematics", Grade == "8", Subgroup == "All") %>% 
   pull(Mean) %>% as.numeric()
 
-#4th Grade Reading
+#D.3 - 4th Grade Reading
 nat_mean_reading_4_2009 <- NAEP_Summary_2009 %>% 
   filter(State == "NT", Subject == "Reading", Grade == "4", Subgroup == "All") %>% 
   pull(Mean) %>% as.numeric()
 
-#8th Grade Reading
+#D.4 - 8th Grade Reading
 nat_mean_reading_8_2009 <- NAEP_Summary_2009 %>% 
   filter(State == "NT", Subject == "Reading", Grade == "8", Subgroup == "All") %>% 
   pull(Mean) %>% as.numeric()
 
+
+#E. Achievement Gap Calculations:
 
 NAEP_2009_State_Summary_Clean <- NAEP_2009_State_Summary %>%
   mutate(across(starts_with(c("Mean_", "Median_")), ~ parse_number(as.character(.x))))
@@ -103,73 +108,84 @@ NAEP_2009_Academic_Achievement_Gaps_Summary <- NAEP_2009_State_Summary %>%
     Year,
     State,
     
-    # --- 4th Grade Mathematics Mean ---
-    Mean_4_Math_White_v_All    = Mean_Mathematics_4_All - Mean_Mathematics_4_White,
-    Mean_4_Math_Black_v_All    = Mean_Mathematics_4_All - Mean_Mathematics_4_Black,
-    Mean_4_Math_Hispanic_v_All = Mean_Mathematics_4_All - Mean_Mathematics_4_Hispanic,
-    Mean_4_Math_At_Risk_v_All  = Mean_Mathematics_4_All - `Mean_Mathematics_4_Economically Disadvantaged`,
-    Mean_4_Math_ELL_v_All      = Mean_Mathematics_4_All - `Mean_Mathematics_4_English Language Learners`,
-    Mean_4_Math_SPED_v_All     = Mean_Mathematics_4_All - Mean_Mathematics_4_SPED,
+#E.1 - Mathematics
 
-    # --- 4th Grade Mathematics Median ---
-    Median_4_Math_White_v_All    = Median_Mathematics_4_All - Median_Mathematics_4_White,
-    Median_4_Math_Black_v_All    = Median_Mathematics_4_All - Median_Mathematics_4_Black,
-    Median_4_Math_Hispanic_v_All = Median_Mathematics_4_All - Median_Mathematics_4_Hispanic,
-    Median_4_Math_At_Risk_v_All  = Median_Mathematics_4_All - `Median_Mathematics_4_Economically Disadvantaged`,
-    Median_4_Math_ELL_v_All      = Median_Mathematics_4_All - `Median_Mathematics_4_English Language Learners`,
-    Median_4_Math_SPED_v_All     = Median_Mathematics_4_All - Median_Mathematics_4_SPED,
+##E.1.a - 4th Grade Mathematics
 
-    # --- 8th Grade Mathematics Mean ---
-    Mean_8_Math_White_v_All    = Mean_Mathematics_8_All - Mean_Mathematics_8_White,
-    Mean_8_Math_Black_v_All    = Mean_Mathematics_8_All - Mean_Mathematics_8_Black,
-    Mean_8_Math_Hispanic_v_All = Mean_Mathematics_8_All - Mean_Mathematics_8_Hispanic,
-    Mean_8_Math_At_Risk_v_All  = Mean_Mathematics_8_All - `Mean_Mathematics_8_Economically Disadvantaged`,
-    Mean_8_Math_ELL_v_All      = Mean_Mathematics_8_All - `Mean_Mathematics_8_English Language Learners`,
-    Mean_8_Math_SPED_v_All     = Mean_Mathematics_8_All - Mean_Mathematics_8_SPED,
+  #Racial Gaps:
+      Mean_4_Math_White_v_Black  = Mean_Mathematics_4_White - Mean_Mathematics_4_Black,
+      Mean_4_Math_White_v_Hispanic = Mean_Mathematics_4_White - Mean_Mathematics_4_Hispanic,
+      Mean_4_Math_Hispanic_v_Black  = Mean_Mathematics_4_Black - Mean_Mathematics_4_Hispanic,
+  
+  #Economic Status:
+      Mean_4_Math_At_Risk_v_All  = Mean_Mathematics_4_All - `Mean_Mathematics_4_Economically Disadvantaged`,
+  
+  #English Language Proficiency:
+      Mean_4_Math_ELL_v_All      = Mean_Mathematics_4_All - `Mean_Mathematics_4_English Language Learners`,
+  
+  #Student Ability:
+      Mean_4_Math_SPED_v_All     = Mean_Mathematics_4_All - Mean_Mathematics_4_SPED,
 
-    # --- 8th Grade Mathematics Median ---
-    Median_8_Math_White_v_All    = Median_Mathematics_8_All - Median_Mathematics_8_White,
-    Median_8_Math_Black_v_All    = Median_Mathematics_8_All - Median_Mathematics_8_Black,
-    Median_8_Math_Hispanic_v_All = Median_Mathematics_8_All - Median_Mathematics_8_Hispanic,
-    Median_8_Math_At_Risk_v_All  = Median_Mathematics_8_All - `Median_Mathematics_8_Economically Disadvantaged`,
-    Median_8_Math_ELL_v_All      = Median_Mathematics_8_All - `Median_Mathematics_8_English Language Learners`,
-    Median_8_Math_SPED_v_All     = Median_Mathematics_8_All - Median_Mathematics_8_SPED,
 
-    # --- 4th Grade Reading Mean ---
-    Mean_4_Reading_White_v_All    = Mean_Reading_4_All - Mean_Reading_4_White,
-    Mean_4_Reading_Black_v_All    = Mean_Reading_4_All - Mean_Reading_4_Black,
-    Mean_4_Reading_Hispanic_v_All = Mean_Reading_4_All - Mean_Reading_4_Hispanic,
-    Mean_4_Reading_At_Risk_v_All  = Mean_Reading_4_All - `Mean_Reading_4_Economically Disadvantaged`,
-    Mean_4_Reading_ELL_v_All      = Mean_Reading_4_All - `Mean_Reading_4_English Language Learners`,
-    Mean_4_Reading_SPED_v_All     = Mean_Reading_4_All - Mean_Reading_4_SPED,
+##E.1.b - 8th Grade Mathematics
 
-    # --- 4th Grade Reading Median ---
-    Median_4_Reading_White_v_All    = Median_Reading_4_All - Median_Reading_4_White,
-    Median_4_Reading_Black_v_All    = Median_Reading_4_All - Median_Reading_4_Black,
-    Median_4_Reading_Hispanic_v_All = Median_Reading_4_All - Median_Reading_4_Hispanic,
-    Median_4_Reading_At_Risk_v_All  = Median_Reading_4_All - `Median_Reading_4_Economically Disadvantaged`,
-    Median_4_Reading_ELL_v_All      = Median_Reading_4_All - `Median_Reading_4_English Language Learners`,
-    Median_4_Reading_SPED_v_All     = Median_Reading_4_All - Median_Reading_4_SPED,
+  #Racial Gaps:
+      Mean_8_Math_White_v_Black  = Mean_Mathematics_8_White - Mean_Mathematics_8_Black,
+      Mean_8_Math_White_v_Hispanic = Mean_Mathematics_8_White - Mean_Mathematics_8_Hispanic,
+      Mean_8_Math_Hispanic_v_Black  = Mean_Mathematics_8_Black - Mean_Mathematics_8_Hispanic,
 
-    # --- 8th Grade Reading Mean ---
-    Mean_8_Reading_White_v_All    = Mean_Reading_8_All - Mean_Reading_8_White,
-    Mean_8_Reading_Black_v_All    = Mean_Reading_8_All - Mean_Reading_8_Black,
-    Mean_8_Reading_Hispanic_v_All = Mean_Reading_8_All - Mean_Reading_8_Hispanic,
-    Mean_8_Reading_At_Risk_v_All  = Mean_Reading_8_All - `Mean_Reading_8_Economically Disadvantaged`,
-    Mean_8_Reading_ELL_v_All      = Mean_Reading_8_All - `Mean_Reading_8_English Language Learners`,
-    Mean_8_Reading_SPED_v_All     = Mean_Reading_8_All - Mean_Reading_8_SPED,
+  #Economic Status:
+      Mean_8_Math_At_Risk_v_All  = Mean_Mathematics_8_All - `Mean_Mathematics_8_Economically Disadvantaged`,
+  
+  #English Language Proficiency:
+      Mean_8_Math_ELL_v_All      = Mean_Mathematics_8_All - `Mean_Mathematics_8_English Language Learners`,
+  
+  #Student Ability:
+      Mean_8_Math_SPED_v_All     = Mean_Mathematics_8_All - Mean_Mathematics_8_SPED,
 
-    # --- 8th Grade Reading Median ---
-    Median_8_Reading_White_v_All    = Median_Reading_8_All - Median_Reading_8_White,
-    Median_8_Reading_Black_v_All    = Median_Reading_8_All - Median_Reading_8_Black,
-    Median_8_Reading_Hispanic_v_All = Median_Reading_8_All - Median_Reading_8_Hispanic,
-    Median_8_Reading_At_Risk_v_All  = Median_Reading_8_All - `Median_Reading_8_Economically Disadvantaged`,
-    Median_8_Reading_ELL_v_All      = Median_Reading_8_All - `Median_Reading_8_English Language Learners`,
-    Median_8_Reading_SPED_v_All     = Median_Reading_8_All - Median_Reading_8_SPED
+#2. Reading Language Arts
+
+##E.2.a - 4th Grade
+
+  #Racial Gaps:
+      Mean_4_Reading_White_v_Black  = Mean_Reading_4_White - Mean_Reading_4_Black,
+      Mean_4_Reading_White_v_Hispanic = Mean_Reading_4_White - Mean_Reading_4_Hispanic,
+      Mean_4_Reading_Hispanic_v_Black  = Mean_Reading_4_Black - Mean_Reading_4_Hispanic,
+  
+  #Economic Status:
+      Mean_4_Reading_At_Risk_v_All  = Mean_Reading_4_All - `Mean_Reading_4_Economically Disadvantaged`,
+  
+  #English Language Proficiency:
+      Mean_4_Reading_ELL_v_All      = Mean_Reading_4_All - `Mean_Reading_4_English Language Learners`,
+  
+  #Student Ability:
+      Mean_4_Reading_SPED_v_All     = Mean_Reading_4_All - Mean_Reading_4_SPED,
+
+##E.2.b - 8th Grade
+
+  #Racial Gaps:
+      Mean_8_Reading_White_v_Black  = Mean_Reading_8_White - Mean_Reading_8_Black,
+      Mean_8_Reading_White_v_Hispanic = Mean_Reading_8_White - Mean_Reading_8_Hispanic,
+      Mean_8_Reading_Hispanic_v_Black  = Mean_Reading_8_Black - Mean_Reading_8_Hispanic,
+  
+  #Economic Status:
+      Mean_8_Reading_At_Risk_v_All  = Mean_Reading_8_All - `Mean_Reading_8_Economically Disadvantaged`,
+  
+  #English Language Proficiency:
+      Mean_8_Reading_ELL_v_All      = Mean_Reading_8_All - `Mean_Reading_8_English Language Learners`,
+  
+  #Student Ability:
+      Mean_8_Reading_SPED_v_All     = Mean_Reading_8_All - Mean_Reading_8_SPED,
+    
   )
 
 
-#Plot Box and Whisker Distribution by Subgroup
+#F. Plot Box and Whisker Distribution by Subgroup
+
+#1. Mathematics:
+
+#F.1.a - 4th Grade Mathematics
+
 fig_faceted_subgroups_2009_Math4 <- ggplot(df_subgroups_4math_2009, aes(x = Mean, y = 1, fill = Subgroup)) +
   # Boxplot summary layer
   geom_boxplot(width = 0.3, color = "gray30", outlier.shape = NA, alpha = 0.5) +
@@ -202,6 +218,7 @@ fig_faceted_subgroups_2009_Math4 <- ggplot(df_subgroups_4math_2009, aes(x = Mean
 # Save visualization
 ggsave("faceted_NAEPMath42009_subgroup_distributions.png", plot = fig_faceted_subgroups_2009_Math4, width = 8, height = 11, dpi = 300)
 
+#F.1.b - 8th Grade Mathematics
 
 fig_faceted_subgroups_Math8_2009 <- ggplot(df_subgroups_8math_2009, aes(x = Mean, y = 1, fill = Subgroup)) +
   # Boxplot summary layer
@@ -234,6 +251,10 @@ fig_faceted_subgroups_Math8_2009 <- ggplot(df_subgroups_8math_2009, aes(x = Mean
 # Save visualization
 ggsave("faceted_NAEPMath82009_subgroup_distributions.png", plot = fig_faceted_subgroups_Math8_2009, width = 8, height = 11, dpi = 300)
 
+#2 --- Reading ---
+
+#F.2.a - 4th Grade Reading
+
 fig_faceted_subgroups_Reading_4_2009 <- ggplot(df_subgroups_4reading_2009, aes(x = Mean, y = 1, fill = Subgroup)) +
   # Boxplot summary layer
   geom_boxplot(width = 0.3, color = "gray30", outlier.shape = NA, alpha = 0.5) +
@@ -264,6 +285,9 @@ fig_faceted_subgroups_Reading_4_2009 <- ggplot(df_subgroups_4reading_2009, aes(x
 
 # Save visualization
 ggsave("faceted_NAEPReading42009_subgroup_distributions.png", plot = fig_faceted_subgroups_Reading_4_2009, width = 8, height = 11, dpi = 300)
+
+
+#F.2.b - 4th Grade Reading
 
 fig_faceted_subgroups_reading_8_2009 <- ggplot(df_subgroups_8reading_2009, aes(x = Mean, y = 1, fill = Subgroup)) +
   # Boxplot summary layer
