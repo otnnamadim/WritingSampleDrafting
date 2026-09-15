@@ -82,5 +82,32 @@ naep_summary_clean_all_9_15 <- bind_rows(
   result_2024$NAEP_Summary_Clean
 )
 
+#Longitudinal Panel
+naep_panel <- naep_summary_clean_all_9_15 %>%
+  arrange(State, Subject, Grade, Subgroup, Year)
 
-pivot_wider
+
+#Evaluate Mean across Year for each State, Subject, Subgroup
+naep_panel_wide <- naep_panel %>%
+  pivot_wider(
+    id_cols = c(State, Subject, Grade, Subgroup),
+    names_from = Year,
+    values_from = Mean,
+    names_prefix = "Mean_"
+  )
+
+# Pivot - State Assessments by Year Across each Subject (With Racial Achievement Gap Calculated)
+naep_gap_panel <- naep_panel %>%
+  select(Year, State, Subject, Grade, Subgroup, Mean) %>%
+  pivot_wider(
+    id_cols = c(Year, State, Subject, Grade),
+    names_from = Subgroup,
+    values_from = Mean
+  ) %>%
+  mutate(
+    Gap_White_Black = White - Black,
+    Gap_White_Hispanic = White - Hispanic
+  )
+
+
+
