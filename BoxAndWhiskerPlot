@@ -3,6 +3,21 @@
 library(ggplot2)
 library(dplyr)
 
+#Including Proficiency levels in the distributions charts for reference
+nat_mean_math_4_basic <- 214
+nat_mean_math_4_proficient <- 249
+nat_mean_math_4_advanced <- 282
+nat_mean_math_8_basic <- 262
+nat_mean_math_8_proficient <- 299
+nat_mean_math_8_advanced <- 333
+nat_mean_reading_4_basic <- 208
+nat_mean_reading_4_proficient <-238
+nat_mean_reading_4_advanced <- 268
+nat_mean_reading_8_basic <- 243
+nat_mean_reading_8_proficient <- 281
+nat_mean_reading_8_advanced <- 323
+
+
 # Filter long-format summary data for 4th Grade Math (state level)
 df_subgroups_4math <- NAEP_Summary_2009 %>%
   filter(
@@ -24,6 +39,7 @@ nat_mean_math_4_2009 <- NAEP_Summary_2009 %>%
   pull(Mean) %>% as.numeric()
 
 # Faceted Plot Construction (Fixed y aesthetic mapping)
+
 fig_faceted_subgroups <- ggplot(df_subgroups_4math, aes(x = Mean, y = 1, fill = Subgroup)) +
   # Boxplot summary layer
   geom_boxplot(width = 0.3, color = "gray30", outlier.shape = NA, alpha = 0.5) +
