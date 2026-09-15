@@ -115,7 +115,7 @@ NAEP_2009_Academic_Achievement_Gaps_Summary <- NAEP_2009_State_Summary %>%
   #Racial Gaps:
       Mean_4_Math_White_v_Black  = Mean_Mathematics_4_White - Mean_Mathematics_4_Black,
       Mean_4_Math_White_v_Hispanic = Mean_Mathematics_4_White - Mean_Mathematics_4_Hispanic,
-      Mean_4_Math_Hispanic_v_Black  = Mean_Mathematics_4_Black - Mean_Mathematics_4_Hispanic,
+      Mean_4_Math_Hispanic_v_Black  = Mean_Mathematics_4_Hispanic - Mean_Mathematics_4_Black,
   
   #Economic Status:
       Mean_4_Math_At_Risk_v_All  = Mean_Mathematics_4_All - `Mean_Mathematics_4_Economically Disadvantaged`,
@@ -132,7 +132,7 @@ NAEP_2009_Academic_Achievement_Gaps_Summary <- NAEP_2009_State_Summary %>%
   #Racial Gaps:
       Mean_8_Math_White_v_Black  = Mean_Mathematics_8_White - Mean_Mathematics_8_Black,
       Mean_8_Math_White_v_Hispanic = Mean_Mathematics_8_White - Mean_Mathematics_8_Hispanic,
-      Mean_8_Math_Hispanic_v_Black  = Mean_Mathematics_8_Black - Mean_Mathematics_8_Hispanic,
+      Mean_8_Math_Hispanic_v_Black  = Mean_Mathematics_8_Hispanic - Mean_Mathematics_8_Black,
 
   #Economic Status:
       Mean_8_Math_At_Risk_v_All  = Mean_Mathematics_8_All - `Mean_Mathematics_8_Economically Disadvantaged`,
@@ -150,7 +150,7 @@ NAEP_2009_Academic_Achievement_Gaps_Summary <- NAEP_2009_State_Summary %>%
   #Racial Gaps:
       Mean_4_Reading_White_v_Black  = Mean_Reading_4_White - Mean_Reading_4_Black,
       Mean_4_Reading_White_v_Hispanic = Mean_Reading_4_White - Mean_Reading_4_Hispanic,
-      Mean_4_Reading_Hispanic_v_Black  = Mean_Reading_4_Black - Mean_Reading_4_Hispanic,
+      Mean_4_Reading_Hispanic_v_Black  = Mean_Reading_4_Hispanic - Mean_Reading_4_Black,
   
   #Economic Status:
       Mean_4_Reading_At_Risk_v_All  = Mean_Reading_4_All - `Mean_Reading_4_Economically Disadvantaged`,
@@ -166,7 +166,7 @@ NAEP_2009_Academic_Achievement_Gaps_Summary <- NAEP_2009_State_Summary %>%
   #Racial Gaps:
       Mean_8_Reading_White_v_Black  = Mean_Reading_8_White - Mean_Reading_8_Black,
       Mean_8_Reading_White_v_Hispanic = Mean_Reading_8_White - Mean_Reading_8_Hispanic,
-      Mean_8_Reading_Hispanic_v_Black  = Mean_Reading_8_Black - Mean_Reading_8_Hispanic,
+      Mean_8_Reading_Hispanic_v_Black  = Mean_Reading_8_Hispanic - Mean_Reading_8_Black,
   
   #Economic Status:
       Mean_8_Reading_At_Risk_v_All  = Mean_Reading_8_All - `Mean_Reading_8_Economically Disadvantaged`,
