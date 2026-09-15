@@ -1,90 +1,100 @@
+#The purpose of this script is to prepare summary tables of the National statistics for each NAEP assessmenet by filtering out the relevant assessments from each data table.
+
 National_Statistics_Math4 <- bind_rows(
-  (National_Averages_By_Race %>%
+  National_Averages_By_Race %>%
     filter(
       Subject == "Mathematics",
-      Grade == "4",
-    ),  
-  (National_Averages_SPED %>%
+      Grade == "4"
+    ),
+  
+  National_Averages_SPED %>%
     filter(
       Subject == "Mathematics",
-      Grade == "4",
-    ), 
-  (National_Averages_At_Risk %>%
+      Grade == "4"
+    ),
+  
+  National_Averages_At_Risk %>%
     filter(
       Subject == "Mathematics",
-      Grade == "4",
-    ), 
-  (National_Averages_ELL %>%
+      Grade == "4"
+    ),
+  
+  National_Averages_ELL %>%
     filter(
       Subject == "Mathematics",
-      Grade == "4",
-    ))
+      Grade == "4"
+    )
+)
 
 
 National_Statistics_Math8 <- bind_rows(
-  (National_Averages_By_Race %>%
+  National_Averages_By_Race %>%
     filter(
       Subject == "Mathematics",
       Grade == "8",
     ),  
-  (National_Averages_SPED %>%
+  National_Averages_SPED %>%
     filter(
       Subject == "Mathematics",
       Grade == "8",
     ), 
-  (National_Averages_At_Risk %>%
+  National_Averages_At_Risk %>%
     filter(
       Subject == "Mathematics",
       Grade == "8",
     ), 
-  (National_Averages_ELL %>%
+  National_Averages_ELL %>%
     filter(
       Subject == "Mathematics",
       Grade == "8",
-    ))
+    )
+)
 
 
 National_Statistics_RLA4 <- bind_rows(
-  (National_Averages_By_Race %>%
+  National_Averages_By_Race %>%
     filter(
       Subject == "Reading",
       Grade == "4",
     ),  
-  (National_Averages_SPED %>%
+  National_Averages_SPED %>%
     filter(
       Subject == "Reading",
       Grade == "4",
     ), 
-  (National_Averages_At_Risk %>%
+  National_Averages_At_Risk %>%
     filter(
       Subject == "Reading",
       Grade == "4",
     ), 
-  (National_Averages_ELL %>%
+  National_Averages_ELL %>%
     filter(
       Subject == "Reading",
       Grade == "4",
-    ))
-
+    )
+)
 
 National_Statistics_RLA8 <- bind_rows(
-  (National_Averages_By_Race %>%
+  National_Averages_By_Race %>%
     filter(
       Subject == "Reading",
       Grade == "8",
     ),  
-  (National_Averages_SPED %>%
+  National_Averages_SPED %>%
     filter(
       Subject == "Reading",
       Grade == "8",
     ), 
-  (National_Averages_At_Risk %>%
+  National_Averages_At_Risk %>%
     filter(
       Subject == "Reading",
       Grade == "8",
     ), 
-  (National_Averages_ELL %>%
+  National_Averages_ELL %>%
     filter(
       Subject == "Reading",
       Grade == "8",
-    ))
+    )
+)
+
+
