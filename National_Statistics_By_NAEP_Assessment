@@ -98,3 +98,30 @@ National_Statistics_RLA8 <- bind_rows(
 )
 
 
+
+
+####### Pivot the Tables
+
+National_Statistics_Math4_Wide <- National_Statistics_Math4 %>% pivot_wider(
+    id_cols = Subgroup,
+    names_from = Year,
+    values_from = Mean
+  )
+
+National_Statistics_Math8_Wide <- National_Statistics_Math8 %>% pivot_wider(
+    id_cols = Subgroup,
+    names_from = Year,
+    values_from = Mean
+  )
+
+National_Statistics_RLA4_Wide <- National_Statistics_RLA4 %>% pivot_wider(
+    id_cols = Subgroup,
+    names_from = Year,
+    values_from = Mean
+  )
+
+National_Statistics_RLA8_Wide <- National_Statistics_RLA8 %>% pivot_wider(
+    id_cols = Subgroup,
+    names_from = Year,
+    values_from = Mean
+  )
