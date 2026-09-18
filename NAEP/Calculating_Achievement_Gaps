@@ -1,0 +1,551 @@
+#Combined all NAEP scores broken out by racial demographics into this long pivot file. The resulting file was segmented  on the assessment Subject and grade. Following the segmentation, then the resulting file is pivoted to present racial subgroups as columns, and the achievement gaps are calulated at the jurisdiction level by each racial subgroup. 
+
+
+All_Combined_NAEP_Scores_By_Race_Scrubbed <- All_Combined_NAEP_Scores_By_Race %>%
+  mutate(
+    Mean = as.numeric(Mean),
+    Mean = na_if(Mean, 999)
+  )
+
+#Segmenting the combined data frame for each individual assessment:
+
+All_Math4Combined_NAEP_Scores_By_Race_Scrubbed <- All_Combined_NAEP_Scores_By_Race_Scrubbed %>% filter(Subject =="Mathematics", Grade == 4)
+All_Math8Combined_NAEP_Scores_By_Race_Scrubbed <-
+All_Combined_NAEP_Scores_By_Race_Scrubbed %>% filter(Subject =="Mathematics", Grade == 8)
+All_RLA4Combined_NAEP_Scores_By_Race_Scrubbed <-
+All_Combined_NAEP_Scores_By_Race_Scrubbed %>% filter(Subject =="Reading", Grade == 4)
+All_RLA8Combined_NAEP_Scores_By_Race_Scrubbed <-
+All_Combined_NAEP_Scores_By_Race_Scrubbed %>% filter(Subject =="Reading", Grade == 8)
+
+#All Achievement Gaps Calculated by Racial Demographic 
+
+Math4_Achievement_Gaps_By_Race_Calculated <- All_Math4Combined_NAEP_Scores_By_Race_Scrubbed %>%
+  pivot_wider(
+    id_cols = c(Jurisdiction, Year),
+    names_from = Subgroup,
+    values_from = Mean
+  ) %>%
+  mutate(
+    Gap_White_Black = White - Black,
+    Gap_White_Hispanic = White - Hispanic,
+    Gap_Asian_Black = Asian - Black,
+    Gap_Asian_White = Asian - White,
+    Gap_Asian_Hispanic = Asian - Hispanic,
+    Gap_Hispanic_Black = Hispanic - Black
+  )
+
+
+Math8_Achievement_Gaps_By_Race_Calculated <- All_Math8Combined_NAEP_Scores_By_Race_Scrubbed %>%
+  pivot_wider(
+    id_cols = c(Jurisdiction, Year),
+    names_from = Subgroup,
+    values_from = Mean
+  ) %>%
+  mutate(
+    Gap_White_Black = White - Black,
+    Gap_White_Hispanic = White - Hispanic,
+    Gap_Asian_Black = Asian - Black,
+    Gap_Asian_White = Asian - White,
+    Gap_Asian_Hispanic = Asian - Hispanic,
+    Gap_Hispanic_Black = Hispanic - Black
+  )
+
+
+RLA4_Achievement_Gaps_By_Race_Calculated <- All_RLA4Combined_NAEP_Scores_By_Race_Scrubbed %>%
+  pivot_wider(
+    id_cols = c(Jurisdiction, Year),
+    names_from = Subgroup,
+    values_from = Mean
+  ) %>%
+  mutate(
+    Gap_White_Black = White - Black,
+    Gap_White_Hispanic = White - Hispanic,
+    Gap_Asian_Black = Asian - Black,
+    Gap_Asian_White = Asian - White,
+    Gap_Asian_Hispanic = Asian - Hispanic,
+    Gap_Hispanic_Black = Hispanic - Black
+  )
+
+
+RLA8_Achievement_Gaps_By_Race_Calculated <- All_RLA8Combined_NAEP_Scores_By_Race_Scrubbed %>%
+  pivot_wider(
+    id_cols = c(Jurisdiction, Year),
+    names_from = Subgroup,
+    values_from = Mean
+  ) %>%
+  mutate(
+    Gap_White_Black = White - Black,
+    Gap_White_Hispanic = White - Hispanic,
+    Gap_Asian_Black = Asian - Black,
+    Gap_Asian_White = Asian - White,
+    Gap_Asian_Hispanic = Asian - Hispanic,
+    Gap_Hispanic_Black = Hispanic - Black
+  )
+
+#Pivoting each of the Achievement files to a longer format to present achievement gaps easier for visualisation.
+
+Math4_Achievement_Gaps_By_Race_Calculated_Long <-
+Math4_Achievement_Gaps_By_Race_Calculated %>%
+  select(
+    Jurisdiction,
+    Year,
+    Gap_White_Black,
+    Gap_White_Hispanic,
+    Gap_Asian_Black,
+    Gap_Asian_White,
+    Gap_Asian_Hispanic,
+    Gap_Hispanic_Black
+  ) %>%
+  pivot_longer(
+    cols = starts_with("Gap_"),
+    names_to = "Gap_Type",
+    values_to = "Gap"
+  )
+
+Math8_Achievement_Gaps_By_Race_Calculated_Long <-
+Math8_Achievement_Gaps_By_Race_Calculated %>%
+  select(
+    Jurisdiction,
+    Year,
+    Gap_White_Black,
+    Gap_White_Hispanic,
+    Gap_Asian_Black,
+    Gap_Asian_White,
+    Gap_Asian_Hispanic,
+    Gap_Hispanic_Black
+  ) %>%
+  pivot_longer(
+    cols = starts_with("Gap_"),
+    names_to = "Gap_Type",
+    values_to = "Gap"
+  )
+
+RLA4_Achievement_Gaps_By_Race_Calculated_Long <-
+RLA4_Achievement_Gaps_By_Race_Calculated %>%
+  select(
+    Jurisdiction,
+    Year,
+    Gap_White_Black,
+    Gap_White_Hispanic,
+    Gap_Asian_Black,
+    Gap_Asian_White,
+    Gap_Asian_Hispanic,
+    Gap_Hispanic_Black
+  ) %>%
+  pivot_longer(
+    cols = starts_with("Gap_"),
+    names_to = "Gap_Type",
+    values_to = "Gap"
+  )
+
+RLA8_Achievement_Gaps_By_Race_Calculated_Long <-
+RLA8_Achievement_Gaps_By_Race_Calculated %>%
+  select(
+    Jurisdiction,
+    Year,
+    Gap_White_Black,
+    Gap_White_Hispanic,
+    Gap_Asian_Black,
+    Gap_Asian_White,
+    Gap_Asian_Hispanic,
+    Gap_Hispanic_Black
+  ) %>%
+  pivot_longer(
+    cols = starts_with("Gap_"),
+    names_to = "Gap_Type",
+    values_to = "Gap"
+  )
+
+
+#Heatmap to compare achievement gap across year.
+library(ggplot2)
+library(dplyr)
+
+ggplot(
+  Math4_Achievement_Gaps_By_Race_Calculated_Long %>%
+    filter(Gap_Type == "Gap_White_Hispanic"),
+  aes(
+    x = factor(Year),
+    y = reorder(Jurisdiction, Gap),
+    fill = Gap
+  )
+) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(
+    midpoint = 0,
+    name = "Score Difference"
+  ) +
+  labs(
+    title = "NAEP Grade 4 Mathematics Academic Achievement Gap: Hispanic vs. White",
+    subtitle = "State-level differences across assessment years",
+    x = "Assessment Year",
+    y = "Jurisdiction"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1
+    )
+  )
+
+
+#To keep the jurisdiction names in alphabetical order:
+
+ggplot(
+  Math4_Achievement_Gaps_By_Race_Calculated_Long %>%
+    filter(Gap_Type == "Gap_White_Black"),
+  aes(
+    x = factor(Year),
+    y = factor(
+      Jurisdiction,
+      levels = sort(unique(Jurisdiction))
+    ),
+    fill = Gap
+  )
+) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(
+    midpoint = 0,
+    name = "Score Difference"
+  ) +
+  labs(
+    title = "Academic Achievement Gaps Among White and Black Students from 2009 - 2024 organized by State",
+    subtitle = "State-level differences across assessment years",
+    x = "Assessment Year",
+    y = "Jurisdiction"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1
+    )
+  )
+
+
+ggplot(
+  Math4_Achievement_Gaps_By_Race_Calculated_Long %>%
+    filter(Gap_Type == "Gap_White_Hispanic"),
+  aes(
+    x = factor(Year),
+    y = factor(
+      Jurisdiction,
+      levels = sort(unique(Jurisdiction))
+    ),
+    fill = Gap
+  )
+) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(
+    midpoint = 0,
+    name = "Score Difference"
+  ) +
+  labs(
+    title = "Academic Achievement Gaps Among White and Hispanic Students from 2009 - 2024",
+    subtitle = "State-level differences across assessment years",
+    x = "Assessment Year",
+    y = "Jurisdiction"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1
+    )
+  )
+
+
+
+ggplot(
+  Math8_Achievement_Gaps_By_Race_Calculated_Long %>%
+    filter(Gap_Type == "Gap_White_Black"),
+  aes(
+    x = factor(Year),
+    y = factor(
+      Jurisdiction,
+      levels = sort(unique(Jurisdiction))
+    ),
+    fill = Gap
+  )
+) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(
+    midpoint = 0,
+    name = "Score Difference"
+  ) +
+  labs(
+    title = "NAEP Math 8 Academic Achievement Gaps Among White and Black Students from 2009 - 2024 organized by State",
+    subtitle = "State-level differences across assessment years",
+    x = "Assessment Year",
+    y = "Jurisdiction"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1
+    )
+  )
+
+ggplot(
+  Math8_Achievement_Gaps_By_Race_Calculated_Long %>%
+    filter(Gap_Type == "Gap_White_Hispanic"),
+  aes(
+    x = factor(Year),
+    y = factor(
+      Jurisdiction,
+      levels = sort(unique(Jurisdiction))
+    ),
+    fill = Gap
+  )
+) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(
+    midpoint = 0,
+    name = "Score Difference"
+  ) +
+  labs(
+    title = " Math 8 Academic Achievement Gaps Among White and Hispanic Students from 2009 - 2024",
+    subtitle = "State-level differences across assessment years",
+    x = "Assessment Year",
+    y = "Jurisdiction"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1
+    )
+  )
+
+ggplot(
+  RLA4_Achievement_Gaps_By_Race_Calculated_Long %>%
+    filter(Gap_Type == "Gap_White_Black"),
+  aes(
+    x = factor(Year),
+    y = factor(
+      Jurisdiction,
+      levels = sort(unique(Jurisdiction))
+    ),
+    fill = Gap
+  )
+) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(
+    midpoint = 0,
+    name = "Score Difference"
+  ) +
+  labs(
+    title = "NAEP RLA 4 Academic Achievement Gaps Among White and Black Students from 2009 - 2024 organized by State",
+    subtitle = "State-level differences across assessment years",
+    x = "Assessment Year",
+    y = "Jurisdiction"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1
+    )
+  )
+
+ggplot(
+  RLA4_Achievement_Gaps_By_Race_Calculated_Long %>%
+    filter(Gap_Type == "Gap_White_Hispanic"),
+  aes(
+    x = factor(Year),
+    y = factor(
+      Jurisdiction,
+      levels = sort(unique(Jurisdiction))
+    ),
+    fill = Gap
+  )
+) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(
+    midpoint = 0,
+    name = "Score Difference"
+  ) +
+  labs(
+    title = "NAEP RLA 4 Academic Achievement Gaps Among White and Hispanic Students from 2009 - 2024",
+    subtitle = "State-level differences across assessment years",
+    x = "Assessment Year",
+    y = "Jurisdiction"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1
+    )
+  )
+
+
+
+ggplot(
+  RLA8_Achievement_Gaps_By_Race_Calculated_Long %>%
+    filter(Gap_Type == "Gap_White_Black"),
+  aes(
+    x = factor(Year),
+    y = factor(
+      Jurisdiction,
+      levels = sort(unique(Jurisdiction))
+    ),
+    fill = Gap
+  )
+) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(
+    midpoint = 0,
+    name = "Score Difference"
+  ) +
+  labs(
+    title = "NAEP RLA 8 Academic Achievement Gaps Among White and Black Students from 2009 - 2024 organized by State",
+    subtitle = "State-level differences across assessment years",
+    x = "Assessment Year",
+    y = "Jurisdiction"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1
+    )
+  )
+
+ggplot(
+  RLA8_Achievement_Gaps_By_Race_Calculated_Long %>%
+    filter(Gap_Type == "Gap_White_Hispanic"),
+  aes(
+    x = factor(Year),
+    y = factor(
+      Jurisdiction,
+      levels = sort(unique(Jurisdiction))
+    ),
+    fill = Gap
+  )
+) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(
+    midpoint = 0,
+    name = "Score Difference"
+  ) +
+  labs(
+    title = "NAEP RLA 8 Academic Achievement Gaps Among White and Hispanic Students from 2009 - 2024",
+    subtitle = "State-level differences across assessment years",
+    x = "Assessment Year",
+    y = "Jurisdiction"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1
+    )
+  )
+
+ggplot(
+  Math8_Achievement_Gaps_By_Race_Calculated_Long %>%
+    filter(Gap_Type == "Gap_White_Hispanic"),
+  aes(
+    x = factor(Year),
+    y = reorder(Jurisdiction, Gap),
+    fill = Gap
+  )
+) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(
+    midpoint = 0,
+    name = "Score Difference"
+  ) +
+  labs(
+    title = "NAEP Grade 8 Mathematics Academic Achievement Gap: Hispanic vs. White Students",
+    subtitle = "State-level differences across assessment years",
+    x = "Assessment Year",
+    y = "Jurisdiction"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1
+    )
+  )
+
+
+ggplot(
+  RLA4_Achievement_Gaps_By_Race_Calculated_Long %>%
+    filter(Gap_Type == "Gap_White_Hispanic"),
+  aes(
+    x = factor(Year),
+    y = reorder(Jurisdiction, Gap),
+    fill = Gap
+  )
+) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(
+    midpoint = 0,
+    name = "Score Difference"
+  ) +
+  labs(
+    title = "NAEP Grade 4 Reading Academic Achievement Gap: Hispanic vs. White",
+    subtitle = "State-level differences across assessment years",
+    x = "Assessment Year",
+    y = "Jurisdiction"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1
+    )
+  )
+
+ggplot(
+  RLA8_Achievement_Gaps_By_Race_Calculated_Long %>%
+    filter(Gap_Type == "Gap_White_Black"),
+  aes(
+    x = factor(Year),
+    y = reorder(Jurisdiction, Gap),
+    fill = Gap
+  )
+) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(
+    midpoint = 0,
+    name = "Score Difference"
+  ) +
+  labs(
+    title = "NAEP Grade 8 Reading Academic Achievement Gap: Black vs. White",
+    subtitle = "State-level differences across assessment years",
+    x = "Assessment Year",
+    y = "Jurisdiction"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1
+    )
+  )
+
+
+NAEP_Reading4_Combined_Achievement_Gaps_Race <- NAEP_Reading4_Combined %>%
+  mutate(
+    Mean = as.numeric(Mean),
+    Mean = na_if(Mean, 999)
+  ) %>%
+  pivot_wider(
+    id_cols = c(Jurisdiction, Year),
+    names_from = Subgroup,
+    values_from = Mean
+  ) %>%
+  mutate(
+    Gap_White_Black = White - Black,
+    Gap_White_Hispanic = White - Hispanic,
+    Gap_Asian_Black = Asian - Black,
+    Gap_Asian_White = Asian - White,
+    Gap_Asian_Hispanic = Asian - Hispanic,
+    Gap_Hispanic_Black = Hispanic - Black
+  )
