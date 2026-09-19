@@ -550,7 +550,6 @@ NAEP_Reading4_Combined_Achievement_Gaps_Race <- NAEP_Reading4_Combined %>%
   )
 
 
-
 #Math 4 Score Plot for Black Students Across Demographic
 
 #A. Black Students
@@ -588,4 +587,120 @@ ggplot(
 
 #B. Hispanic Students
 
+All_Math4Combined_NAEP_Scores_By_Race_Scrubbed %>%
+    filter(Subgroup == "Hispanic"),
+  aes(
+    x = factor(Year),
+    y = reorder(Jurisdiction, Mean),
+    fill = Mean
+  )
+) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(
+         low = "#eb4802",
+         mid = "#fcf458",
+         high = "#38c202",
+         midpoint = 220.065,
+         name = "Score Difference"
+     ) +
+  labs(
+    title = "NAEP Grade 4 Mathematics: Black Student Average",
+    subtitle = "State-level averages from 2009 to 2024",
+    x = "Assessment Year",
+    y = "Jurisdiction"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1
+    )
+  )
+
 #C. White Students
+All_Math4Combined_NAEP_Scores_By_Race_Scrubbed %>%
+    filter(Subgroup == "White"),
+  aes(
+    x = factor(Year),
+    y = reorder(Jurisdiction, Mean),
+    fill = Mean
+  )
+) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(
+         low = "#eb4802",
+         mid = "#fcf458",
+         high = "#38c202",
+         midpoint = 220.065,
+         name = "Score Difference"
+     ) +
+  labs(
+    title = "NAEP Grade 4 Mathematics: Black Student Average",
+    subtitle = "State-level averages from 2009 to 2024",
+    x = "Assessment Year",
+    y = "Jurisdiction"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(
+      angle = 45,
+      hjust = 1
+    )
+  )
+
+
+#Generate Function for Creating a heatmap for each NAEP assessment:
+
+Create_gap_heatmap <- function(
+         data, 
+         Subgroup,
+         chart_title) 
+{
+     
+     plot_data <- data %>%
+         filter (Subgroup == "Subgroup")
+     
+     ggplot(
+         plot_data,
+         aes(
+             x = factor(Year),
+             y = factor(
+                 Jurisdiction,
+                 levels = rev(sort(unique(Jurisdiction)))
+             ),
+             fill = Mean
+         )
+     ) +
+         geom_tile(color = "white") +
+         
+         # Add labels inside each cell
+         geom_text(
+             aes(label = round(Gap, 1)),
+             color = "black",
+             size = 3
+         ) +
+         
+         scale_fill_gradient2(
+              low = "#eb4802",
+               mid = "#fcf458",
+               high = "#38c202",
+               midpoint = 220.065,
+             name = "Score Difference"
+         ) +
+         
+         labs(
+             title = chart_title,
+             subtitle = "State-level differences across assessment years",
+             x = "Assessment Year",
+             y = "Jurisdiction"
+         ) +
+         
+         theme_minimal() +
+         
+         theme(
+             axis.text.x = element_text(
+                 angle = 45,
+                 hjust = 1
+             )
+         )
++ }
