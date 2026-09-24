@@ -1,0 +1,27 @@
+library(dplyr)
+library(tidyr)
+
+gap_data <- NAEP_Panel %>%
+  filter(
+    Subgroup %in% c(
+      "White",
+      "Black",
+      "Hispanic"
+    )
+  ) %>%
+  select(
+    Year,
+    Jurisdiction,
+    Subject,
+    Grade,
+    Subgroup,
+    Mean
+  ) %>%
+  pivot_wider(
+    names_from = Subgroup,
+    values_from = Mean
+  ) %>%
+  mutate(
+    Gap_White_Black = White - Black,
+    Gap_White_Hispanic = White - Hispanic
+  )
