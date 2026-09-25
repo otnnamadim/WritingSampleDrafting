@@ -12,7 +12,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
     handlers=[
-        logging.FileHandler("naep_pull.log"),
+        logging.FileHandler("naep_pull_econ_disadv.log"),
         logging.StreamHandler(),
     ],
 )
@@ -67,33 +67,99 @@ SUBJECT_CONFIG = {
 
 
 # ============================================================
-# Race / Ethnicity Configuration
+# Economically Disadvantaged Definitions
+#
+# ECONDIS:
+#   1 = Eligible (Economically Disadvantaged)
+#   2 = Not eligible (Not Economically Disadvantaged)
+#   3 = Information not available
+#
+# Category 3 is intentionally excluded from the analysis.
 # ============================================================
 
 SUBGROUPS = {
     "Economically Disadvantaged": {
-        "variable": "SLUNCH3",
-        "categoryindex": 1,
+        "variable": "ECONDIS",
+        "categoryindex": "1",
     },
-
     "Not Economically Disadvantaged": {
-        "variable": "SLUNCH3",
-        "categoryindex": "0",
+        "variable": "ECONDIS",
+        "categoryindex": "2",
     },
 }
 
 
 # ============================================================
-# Statistic and Jurisdiction Configuration
+# Statistics and Jurisdiction
 # ============================================================
 
 STAT_TYPES = {
     "Mean": "MN:MN",
+    "25th Percentile": "PC:P2",
+    "50th Percentile": "PC:P5",
+    "75th Percentile": "PC:P7",
+    "Standard Deviation": "SD:SD",
+    "Discrete achievement level – At Basic": "ALD:BA",
+    "Discrete achievement level – At Proficient": "ALD:PR",
+    "Discrete achievement level – At Advanced": "ALD:AD",
+    "Cumulative achievement level  - Below Basic": "ALC:BB",
+    "Cumulative achievement level  - At or above Basic": "ALC:AB",
+    "Cumulative achievement level  - At or above Proficient": "ALC:AP",
+    "Cumulative achievement level  - At Advanced": "ALC:AD"
 }
 
-# NT = National Public + Private combined
 JURISDICTIONS = [
-    "NT",
+    "AL",
+    "AK",
+    "AZ",
+    "AR",
+    "CA",
+    "CO",
+    "CT",
+    "DE",
+    "DC",
+    "FL",
+    "GA",
+    "HI",
+    "ID",
+    "IL",
+    "IN",
+    "IA",
+    "KS",
+    "KY",
+    "LA",
+    "ME",
+    "MD",
+    "MA",
+    "MI",
+    "MN",
+    "MS",
+    "MO",
+    "MT",
+    "NE",
+    "NV",
+    "NH",
+    "NJ",
+    "NM",
+    "NY",
+    "NC",
+    "ND",
+    "OH",
+    "OK",
+    "OR",
+    "PA",
+    "RI",
+    "SC",
+    "SD",
+    "TN",
+    "TX",
+    "UT",
+    "VT",
+    "VA",
+    "WA",
+    "WV",
+    "WI",
+    "WY",
 ]
 
 
@@ -102,18 +168,17 @@ JURISDICTIONS = [
 # ============================================================
 
 def fetch_naep_score(
-    year,
-    jurisdiction,
-    subject,
-    grade,
-    subscale,
-    variable,
-    category_idx,
-    stattype,
+        year,
+        jurisdiction,
+        subject,
+        grade,
+        subscale,
+        variable,
+        category_idx,
+        stattype,
 ):
     """
     Execute a single query against the NAEP API.
-
     Returns the reported mean score.
     """
 
@@ -128,15 +193,10 @@ def fetch_naep_score(
         "year": str(year),
     }
 
-    # --------------------------------------------------------
-    # Add categoryindex for subgroup queries
-    # --------------------------------------------------------
-
     if variable != "TOTAL" and category_idx is not None:
         params["categoryindex"] = str(category_idx)
 
     try:
-
         response = requests.get(
             URL,
             params=params,
@@ -147,15 +207,11 @@ def fetch_naep_score(
         if response.status_code == 200:
 
             payload = response.json()
-
             results = payload.get("result", [])
 
             if len(results) > 0:
 
-                value = results[0].get(
-                    "value",
-                    "N/A"
-                )
+                value = results[0].get("value", "N/A")
 
                 try:
                     return f"{float(value):.2f}"
@@ -165,12 +221,8 @@ def fetch_naep_score(
 
         logging.warning(
             f"No valid result: "
-            f"{jurisdiction} | "
-            f"{year} | "
-            f"{subject} | "
-            f"Grade {grade} | "
-            f"{variable} | "
-            f"Category {category_idx}"
+            f"{jurisdiction} | {year} | {subject} | Grade {grade} | "
+            f"{variable} | Category {category_idx}"
         )
 
         return "N/A"
@@ -178,14 +230,8 @@ def fetch_naep_score(
     except Exception as err:
 
         logging.error(
-            f"Error querying "
-            f"{jurisdiction} | "
-            f"{year} | "
-            f"{subject} | "
-            f"Grade {grade} | "
-            f"{variable} | "
-            f"Category {category_idx}: "
-            f"{err}"
+            f"Error querying {jurisdiction} | {year} | {subject} | "
+            f"Grade {grade} | {variable} | Category {category_idx}: {err}"
         )
 
         return "ERROR"
@@ -197,11 +243,11 @@ def fetch_naep_score(
 
 def main():
 
-    output_filename = "naep_national_averages_by_at_risk.csv"
+    output_filename = "naep_national_averages_EconDisadv_by_State_2009_2024.csv"
 
     logging.info(
-        f"Starting NAEP National Data Extraction "
-        f"-> Output File: {output_filename}"
+        f"Starting NAEP National Data Extraction -> "
+        f"Output File: {output_filename}"
     )
 
     with open(
@@ -213,119 +259,218 @@ def main():
 
         writer = csv.writer(f)
 
-        # ----------------------------------------------------
-        # Output Columns
-        # ----------------------------------------------------
-
-        writer.writerow(
-            [
-                "Year",
-                "Jurisdiction",
-                "Subject",
-                "Grade",
-                "Subgroup",
-                "Mean",
-            ]
-        )
-
-        # ----------------------------------------------------
-        # Loop through assessment years
-        # ----------------------------------------------------
+        writer.writerow([
+            "Year",
+            "Jurisdiction",
+            "Subject",
+            "Grade",
+            "Subgroup",
+            "Mean",
+            "25th Percentile",
+            "50th Percentile",
+            "75th Percentile",
+            "Standard Deviation",
+            "Discrete achievement level – At Basic",
+            "Discrete achievement level – At Proficient",
+            "Discrete achievement level – At Advanced",
+            "Cumulative achievement level  - Below Basic",
+            "Cumulative achievement level  - At or above Basic",
+            "Cumulative achievement level  - At or above Proficient",
+            "Cumulative achievement level  - At Advanced"
+        ])
 
         for year in NAEP_YEARS:
 
-            logging.info(
-                f"Processing Year: {year}"
-            )
-
-            # ------------------------------------------------
-            # Loop through subjects
-            # ------------------------------------------------
+            logging.info(f"Processing Year: {year}")
 
             for subject, grade_dict in SUBJECT_CONFIG.items():
 
-                # --------------------------------------------
-                # Loop through grades
-                # --------------------------------------------
-
                 for grade, subscale in grade_dict.items():
 
-                    # ----------------------------------------
-                    # Loop through racial/ethnic subgroups
-                    # ----------------------------------------
+                    for subgroup_label, subgroup_config in SUBGROUPS.items():
 
-                    for subgroup_label, sub_info in SUBGROUPS.items():
-
-                        # ------------------------------------
-                        # Determine API variable
-                        # ------------------------------------
-
-                        variable_name = sub_info["variable"]
-
-                        category_idx = sub_info["categoryindex"]
-
-                        # ------------------------------------
-                        # Race variable changed for 2009
-                        # ------------------------------------
-
-                        if (
-                            year == 2009
-                            and subgroup_label
-                            in [
-                                "White",
-                                "Black",
-                                "Hispanic",
-                            ]
-                        ):
-                            variable_name = "SDRACE"
-
-                        # ------------------------------------
-                        # Query national jurisdiction
-                        # ------------------------------------
+                        variable_name = subgroup_config["variable"]
+                        category_idx = subgroup_config["categoryindex"]
 
                         for jurisdiction in JURISDICTIONS:
-
                             mean_score = fetch_naep_score(
-                                year=year,
-                                jurisdiction=jurisdiction,
-                                subject=subject,
-                                grade=grade,
-                                subscale=subscale,
-                                variable=variable_name,
-                                category_idx=category_idx,
-                                stattype=STAT_TYPES["Mean"],
+                                year,
+                                jurisdiction,
+                                subject,
+                                grade,
+                                subscale,
+                                variable_name,
+                                category_idx,
+                                STAT_TYPES["Mean"],
                             )
 
-                            # --------------------------------
-                            # Write observation
-                            # --------------------------------
-
-                            writer.writerow(
-                                [
-                                    year,
-                                    jurisdiction,
-                                    subject.capitalize(),
-                                    grade,
-                                    subgroup_label,
-                                    mean_score,
-                                ]
+                            p25_score = fetch_naep_score(
+                                year,
+                                jurisdiction,
+                                subject,
+                                grade,
+                                subscale,
+                                variable_name,
+                                category_idx,
+                                STAT_TYPES["25th Percentile"],
                             )
+
+                            p50_score = fetch_naep_score(
+                                year,
+                                jurisdiction,
+                                subject,
+                                grade,
+                                subscale,
+                                variable_name,
+                                category_idx,
+                                STAT_TYPES["50th Percentile"],
+                            )
+
+                            p75_score = fetch_naep_score(
+                                year,
+                                jurisdiction,
+                                subject,
+                                grade,
+                                subscale,
+                                variable_name,
+                                category_idx,
+                                STAT_TYPES["75th Percentile"],
+                            )
+
+                            sd_score = fetch_naep_score(
+                                year,
+                                jurisdiction,
+                                subject,
+                                grade,
+                                subscale,
+                                variable_name,
+                                category_idx,
+                                STAT_TYPES["Standard Deviation"],
+                            )
+
+                            cum_below_basic = fetch_naep_score(
+                                year,
+                                jurisdiction,
+                                subject,
+                                grade,
+                                subscale,
+                                variable_name,
+                                category_idx,
+                                STAT_TYPES[
+                                    "Cumulative achievement level  - Below Basic"
+                                ],
+                            )
+
+                            disc_at_basic = fetch_naep_score(
+                                year,
+                                jurisdiction,
+                                subject,
+                                grade,
+                                subscale,
+                                variable_name,
+                                category_idx,
+                                STAT_TYPES[
+                                    "Discrete achievement level – At Basic"
+                                ],
+                            )
+
+                            cum_above_basic = fetch_naep_score(
+                                year,
+                                jurisdiction,
+                                subject,
+                                grade,
+                                subscale,
+                                variable_name,
+                                category_idx,
+                                STAT_TYPES[
+                                    "Cumulative achievement level  - At or above Basic"
+                                ],
+                            )
+
+                            disc_proficient = fetch_naep_score(
+                                year,
+                                jurisdiction,
+                                subject,
+                                grade,
+                                subscale,
+                                variable_name,
+                                category_idx,
+                                STAT_TYPES[
+                                    "Discrete achievement level – At Proficient"
+                                ],
+                            )
+
+                            cum_proficient = fetch_naep_score(
+                                year,
+                                jurisdiction,
+                                subject,
+                                grade,
+                                subscale,
+                                variable_name,
+                                category_idx,
+                                STAT_TYPES[
+                                    "Cumulative achievement level  - At or above Proficient"
+                                ],
+                            )
+
+                            disc_advanced = fetch_naep_score(
+                                year,
+                                jurisdiction,
+                                subject,
+                                grade,
+                                subscale,
+                                variable_name,
+                                category_idx,
+                                STAT_TYPES[
+                                    "Discrete achievement level – At Advanced"
+                                ],
+                            )
+
+                            cum_advanced = fetch_naep_score(
+                                year,
+                                jurisdiction,
+                                subject,
+                                grade,
+                                subscale,
+                                variable_name,
+                                category_idx,
+                                STAT_TYPES[
+                                    "Cumulative achievement level  - At Advanced"
+                                ],
+                            )
+
+                            writer.writerow([
+                                year,
+                                jurisdiction,
+                                subject.capitalize(),
+                                grade,
+                                subgroup_label,
+                                mean_score,
+                                p25_score,
+                                p50_score,
+                                p75_score,
+                                sd_score,
+                                cum_below_basic,
+                                disc_at_basic,
+                                cum_above_basic,
+                                disc_proficient,
+                                cum_proficient,
+                                disc_advanced,
+                                cum_advanced,
+                            ])
 
                             logging.info(
-                                f"Completed: "
-                                f"{year} | "
-                                f"{jurisdiction} | "
-                                f"{subject.capitalize()} | "
-                                f"Grade {grade} | "
+                                f"Completed: {year} | {jurisdiction} | "
+                                f"{subject.capitalize()} | Grade {grade} | "
                                 f"{subgroup_label} | "
+                                f"ECONDIS Category {category_idx} | "
                                 f"Mean = {mean_score}"
                             )
 
                             time.sleep(0.05)
 
     logging.info(
-        "NAEP National Data Extraction "
-        "Completed Successfully."
+        "NAEP National Data Extraction Completed Successfully."
     )
 
 
