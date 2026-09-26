@@ -1,4 +1,4 @@
-# The purpose of this program is to pull the National statistics for each racial demographic for both NAEP Math and Reading at the 4th and 8th Grade level.
+# The program pulls the 4th and 8th grade exam statistics for each State jurisdiction for National Assessment for Educational Progress exam administered to 4th and 8th grade Math and Reading students between the years 2009 and 2024.
 
 import csv
 import logging
