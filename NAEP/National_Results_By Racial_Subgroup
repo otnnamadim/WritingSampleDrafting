@@ -7,7 +7,7 @@ import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
-# Setup logging
+# Document logging information
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
@@ -17,7 +17,7 @@ logging.basicConfig(
     ],
 )
 
-# Setup session with automated retries and connection resilience
+# Limits retries to 3
 session = requests.Session()
 retries = Retry(
     total=3,
@@ -27,7 +27,7 @@ retries = Retry(
 )
 session.mount("https://", HTTPAdapter(max_retries=retries))
 
-# NAEP API Configuration
+# NAEP API Link Configuration
 URL = "https://www.nationsreportcard.gov/Dataservice/GetAdhocData.aspx"
 
 HEADERS = {
@@ -39,17 +39,22 @@ HEADERS = {
     "Accept": "application/json, text/plain, */*",
 }
 
-# ============================================================
-# Assessment Years
-# ============================================================
+# ======================================================================================================================================================================================================
+# Assessment Years - This section documents the exam years that are to be queried via API. 
+# NAEP only administers the exams biannually. From 2009 until 2019, the exam was administers on odd years; however, following the COVID-19 pandemic, the 2021 exam was postponed and administered in 2022.
+# =======================================================================================================================================================================================================
 
 NAEP_YEARS = [
-    2019, 2022, 2024
+    2009, 2011, 2013, 2015, 2017, 2019, 2022, 2024
 ]
 
-# ============================================================
-# Subjects and Composite Subscales
-# ============================================================
+# ========================================================================================================================================================================================================
+# Subjects - The NAEP Math & Reading scores are broken into subscales by content area. 
+# For purposes of this data pull, the Composite scores were most relevant to to the analysis conducted. 
+# The Mathematics Composite score variable is "MRPCM" according to the API documentation, and the Reading Composite score is defined as "RRPCM". 
+# The Index below clarifies that for each grade and subject the composite scale is being utilized.
+# API Documentation Here: https://www.nationsreportcard.gov/api_documentation.aspx
+# =========================================================================================================================================================================================================
 
 SUBJECT_CONFIG = {
     "mathematics": {
@@ -62,9 +67,9 @@ SUBJECT_CONFIG = {
     },
 }
 
-# ============================================================
-# Race / Ethnicity Configuration
-# ============================================================
+# ===============================================================================================
+# Race - The Race & Ethnicity variable contains the mapping of the inputs for the SDRACE Variable.
+# ================================================================================================
 
 SUBGROUPS = {
     "All": {
@@ -102,15 +107,11 @@ SUBGROUPS = {
         "categoryindex": "6",
     },
 
-    "Multiracial": {
-        "variable": "SDRACE",
-        "categoryindex": "7",
-    },
 }
 
-# ============================================================
-# Statistic and Jurisdiction Configuration
-# ============================================================
+# ============================================================================================================================
+# Statistic - These are the specific statistics for each population that are being pulled by the population.
+# ==================================================================================================================================
 
 STAT_TYPES = {
     "Mean": "MN:MN",
@@ -127,7 +128,11 @@ STAT_TYPES = {
     "Cumulative achievement level  - At Advanced": "ALC:AD"
 }
 
-# NT = National Public + Private combined
+# =========================================================================================================================================================================================================================
+# Jurisdiction - The API refers to each state the exam is administered in as a formal jurisdiction. 
+# The listing is the coding for each juridiction that is being pulled. For this analysis, I've included all 50 states and the District of Columbia. 
+# =========================================================================================================================================================================================================================
+
 JURISDICTIONS = [
     "AL",
     "AK",
@@ -183,9 +188,9 @@ JURISDICTIONS = [
 ]
 
 
-# ============================================================
-# NAEP API Query Function
-# ============================================================
+# ====================================================================================================================================================================================
+# NAEP API Query Function - This section maps API output by variable included in the API documentation.
+# ====================================================================================================================================================================================
 
 def fetch_naep_score(
         year,
@@ -256,9 +261,9 @@ def fetch_naep_score(
         return "ERROR"
 
 
-# ============================================================
-# Main Extraction
-# ============================================================
+# ====================================================================================================================================================================================
+# Main Extraction - This section defines what to print by expanding on the mapping above. It defines the output to be parsed and written into the final CSV file. 
+# ====================================================================================================================================================================================
 
 def main():
 
@@ -285,7 +290,10 @@ def main():
 
     logging.info("Starting NAEP National Data Extraction")
 
-    # Process one year at a time
+====================================================================================================================================================================================
+    # This defines the loop and outlines program is to execute the code and write a singular csv file for each year individually. 
+====================================================================================================================================================================================
+
     for year in NAEP_YEARS:
 
         output_filename = (
@@ -298,8 +306,6 @@ def main():
         )
 
         try:
-
-            # Create a separate CSV file for the current year
             with open(
                 output_filename,
                 mode="w",
@@ -309,10 +315,13 @@ def main():
 
                 writer = csv.writer(f)
 
-                # Write column headers
+====================================================================================================================================================================================
+    # Output to include the specific columns from the output columns today.
+====================================================================================================================================================================================
                 writer.writerow(output_columns)
-
-                # Process subjects
+====================================================================================================================================================================================
+    # Aggregates that for each jurisdiction, the loop will parse the NAEP results by Subject and Grade Combination.
+====================================================================================================================================================================================
                 for subject, grade_dict in SUBJECT_CONFIG.items():
 
                     # Process grades
@@ -334,11 +343,10 @@ def main():
                                 ]
                             ):
                                 variable_name = "SDRACE"
-
-                            # Process jurisdictions
+=======================================================================================================================================================================================================
+    # The most granular level of data collection is written at the jursdiction level. The Following sections outlines each statistic from the "STAT_TYPES" to be included in the final output.
+=======================================================================================================================================================================================================
                             for jurisdiction in JURISDICTIONS:
-
-                                # Retrieve each statistic
                                 mean_score = fetch_naep_score(
                                     year,
                                     jurisdiction,
@@ -519,7 +527,10 @@ def main():
 
                                 time.sleep(0.05)
 
-            # This message occurs only after the year's CSV is closed
+=======================================================================================================================================================================================================
+    # User Notification that the output is complete.
+=======================================================================================================================================================================================================
+
             logging.info(
                 f"Successfully completed year {year}. "
                 f"Saved to {output_filename}"
@@ -530,9 +541,14 @@ def main():
             logging.exception(
                 f"Extraction failed for year {year}: {err}"
             )
-
-            # Continue to the next year instead of terminating
+=======================================================================================================================================================================================================
+    # Loop to continue unless final year.
+=======================================================================================================================================================================================================
             continue
+
+=======================================================================================================================================================================================================
+    # String notification that final output is ready and loop is complete.
+=======================================================================================================================================================================================================
 
     logging.info(
         "NAEP National Data Extraction Completed."
