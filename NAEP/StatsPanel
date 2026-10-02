@@ -21,20 +21,20 @@ left_join(
 
 left_join(
         Row_Percentages_Racial_Subgroups_Combined_WBH_Wide %>%
-            select('Year', 'Jurisdiction', 'Subject', 'Grade', 'Mean Score_All', 'Mean Score_White', 'Mean Score_Black', 'Mean Score_Hispanic', 'All_SE', 'White-SE', 'Black_SE', 'Hispanic_SE', 'N_All', 'N_White', 'N_Black', 'N_Hispanic', 'CV_All', 'CV_White', 'CV_Black', 'CV_Hispanic'),
+            select('Jurisdiction', 'Year', 'Subject', 'Grade', 'Mean Score_All', 'Mean Score_White', 'Mean Score_Black', 'Mean Score_Hispanic', 'All_SE', 'White-SE', 'Black_SE', 'Hispanic_SE', 'N_All', 'N_White', 'N_Black', 'N_Hispanic', 'CV_All', 'CV_White', 'CV_Black', 'CV_Hispanic'),
         by = c('Jurisdiction', 'Year', 'Subject', 'Grade')) %>%
 
 left_join(
         Row_Percentages_At_Risk_Combined_Wide %>%
-            select( 'Year', 'Jurisdiction', 'Subject', 'Grade', 'Row Percentage_Economically Disadvantaged', 'Row Percentage_Not Economically Disadvantaged', 'SE_ECONDIS', 'SE_NONECONDIS', 'N_Economically Disadvantaged', 'N_Not Economically Disadvantaged'),
+            select( 'Jurisdiction', 'Year', 'Subject', 'Grade', 'Row Percentage_Economically Disadvantaged', 'Row Percentage_Not Economically Disadvantaged', 'SE_ECONDIS', 'SE_NONECONDIS', 'N_Economically Disadvantaged', 'N_Not Economically Disadvantaged'),
         by = c('Jurisdiction', 'Year', 'Subject', 'Grade')) %>%
 
 left_join(
         Row_Percentages_ELL_Combined_Wide %>%
-            select('Year', 'Jurisdiction', 'Subject', 'Grade', 'Row Percentage_English Language Learners', 'Row Percentage_Non-English Language Learners', 'SE_ELL', 'SE_Non_ELL', 'N_English Language Learners', 'N_Non-English Language Learners'),
+            select('Jurisdiction', 'Year', 'Subject', 'Grade', 'Row Percentage_English Language Learners', 'Row Percentage_Non-English Language Learners', 'SE_ELL', 'SE_Non_ELL', 'N_English Language Learners', 'N_Non-English Language Learners'),
         by = c('Jurisdiction', 'Year', 'Subject', 'Grade')) %>%
 
 left_join(
         Row_Percentages_SPED_Combined_Wide %>%
-            select( 'Year', 'Jurisdiction', 'Subject', 'Grade', 'Row Percentage_Special Education', 'Row Percentage_Non-Special Education', 'SE_SPED', 'SE_Non_SPED', 'N_Special Education', 'N_Non-Special Education'),
+            select('Jurisdiction', 'Year', 'Subject', 'Grade', 'Row Percentage_Special Education', 'Row Percentage_Non-Special Education', 'SE_SPED', 'SE_Non_SPED', 'N_Special Education', 'N_Non-Special Education'),
         by = c('Jurisdiction', 'Year', 'Subject', 'Grade'))
